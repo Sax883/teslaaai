@@ -825,7 +825,7 @@
 const BASE_API_URL = 'https://teslaaai.onrender.com/api'; 
 
 // And the fetch call:
-fetch(`${BASE_API_URL}/client/me`, { /* ... */ }) 
+const API_BASE_URL = 'https://teslaaai.onrender.com/api';
         const CART_STORAGE_KEY = 'tesla_ai_car_cart'; 
 
         // 4. Logout Handler Function
@@ -837,37 +837,48 @@ fetch(`${BASE_API_URL}/client/me`, { /* ... */ })
         }
 
         // Function to fetch the authenticated user's profile data
-        async function fetchUserProfile(token) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/client/me`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`, 
-                    },
-                });
+        async function fetchUserProfile() {
+    // 1. Get the token
+    const token = localStorage.getItem('clientToken'); 
+    
+    // 2. Check if token exists
+    if (!token) {
+        // If no token, redirect to login page immediately
+        console.error("No token found. Redirecting to login.");
+        window.location.href = '/'; 
+        return;
+    }
 
-                if (response.status === 401 || response.status === 403) {
-                     alert('Session expired. Please log in again.');
-                     handleLogout();
-                     return null;
-                }
-
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({ message: 'Failed to fetch profile data.' }));
-                    console.error('Profile fetch failed:', errorData.message);
-                    return null;
-                }
-
-                const data = await response.json();
-                return data; 
-                
-            } catch (error) {
-                console.error('Network or server error:', error);
-                return null;
+    try {
+        const response = await fetch(`${BASE_API_URL}/client/me`, {
+            method: 'GET',
+            // 3. CRITICAL: Attach the token to the header
+            headers: {
+                'Authorization': `Bearer ${token}`, // <-- THIS LINE IS ESSENTIAL
+                'Content-Type': 'application/json'
             }
+        });
+
+        if (response.status === 401 || response.status === 403) {
+            // Handle expired/invalid token
+            localStorage.removeItem('clientToken');
+            window.location.href = '/'; 
+            return;
         }
+
+        if (!response.ok) {
+            throw new Error(`Server status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        // Successful login, now display data
+        document.getElementById('client-name-display').textContent = data.name; 
+        // ... rest of your dashboard rendering logic
         
+    } catch (error) {
+        console.error('Network or server error:', error);
+    }
+}
         // --- NEW ACTIVITY / HISTORY FUNCTIONS (CRITICAL FIX: Full Implementation) ---
         
         /**
