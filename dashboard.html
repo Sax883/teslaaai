@@ -140,7 +140,7 @@
             to { opacity: 1; }
         }
 
-.page-content h2 {
+        .page-content h2 {
             font-size: 1.75rem;
             font-weight: 700;
             margin-bottom: 1.5rem;
@@ -285,7 +285,7 @@
             text-align: left;
         }
 
-.plan-card ul li {
+        .plan-card ul li {
             display: flex;
             align-items: center;
             margin-bottom: 0.75rem;
@@ -433,7 +433,7 @@
                 margin-left: 1rem;
             }
 
-.user-profile .avatar {
+            .user-profile .avatar {
                 margin-left: 0.5rem;
             }
             
@@ -509,7 +509,7 @@
                     </div>
                 </div>
 
-<div class="dashboard-main-grid">
+                <div class="dashboard-main-grid">
                     <div class="performance-chart-area">
                         <h2>Portfolio Performance (NASDAQ:TSLA)</h2>
                         <div class="chart-placeholder content-panel" style="height: 100%; padding: 20px;">
@@ -560,7 +560,7 @@
                 </div>
             </div>
 
-<div id="wallet" class="page-content hidden">
+            <div id="wallet" class="page-content hidden">
                 <h2>💳 Wallet Balance</h2>
                 <div class="content-panel">
                     <div class="flex flex-col md:flex-row gap-6">
@@ -601,7 +601,7 @@
                                 <a href="deposit.html?plan=Bronze" class="cta-button select-plan-btn">Select Plan</a> 
                             </div>
 
-<div class="plan-card" data-plan-name="Silver_Tier" data-price="5000">
+                            <div class="plan-card" data-plan-name="Silver_Tier" data-price="5000">
                                 <h2>Silver Tier</h2>
                                 <div class="investment-amount">$5,000</div>
                                 <div class="return-period">Profit Payout: Every 3 Days</div>
@@ -614,7 +614,7 @@
                                 <a href="deposit.html?plan=Silver" class="cta-button select-plan-btn">Select Plan</a>
                             </div>
 
-<div class="plan-card featured" data-plan-name="Gold_Tier" data-price="10000">
+                            <div class="plan-card featured" data-plan-name="Gold_Tier" data-price="10000">
                                 <h2>Gold Tier (Recommended)</h2>
                                 <div class="investment-amount">$10,000</div>
                                 <div class="return-period">Profit Payout: Every 3 Days</div>
@@ -653,7 +653,7 @@
                                 <a href="deposit.html?plan=Diamond" class="cta-button select-plan-btn">Select Plan</a>
                             </div>
 
-<div class="plan-card" data-plan-name="Centurion_Tier" data-price="100000">
+                            <div class="plan-card" data-plan-name="Centurion_Tier" data-price="100000">
                                 <h2>Centurion Tier</h2>
                                 <div class="investment-amount">$100,000+</div>
                                 <div class="return-period">Profit Payout: Every 3 Days</div>
@@ -670,7 +670,7 @@
                     </section>
                 </div>
 
-<div class="content-panel mt-8">
+                <div class="content-panel mt-8">
                     <section id="luxury-cars">
                         <h2>🚗 Exclusive Telsa Luxury Vehicles</h2>
                         <p style="color: var(--color-text-light); margin-bottom: 50px;">Use your investment profits or fresh capital to purchase a Telsa vehicle with cryptocurrency through our exclusive partnership.</p>
@@ -707,7 +707,7 @@
                                 </div>
                             </div>
 
-<div class="car-card" data-car-name="Cybertruck Tri-Motor" data-price="99990" data-image="images/cybertruck_tri.jpg">
+                            <div class="car-card" data-car-name="Cybertruck Tri-Motor" data-price="99990" data-image="images/cybertruck_tri.jpg">
                                 <img src="images/cybertruck_tri.jpg" alt="Tesla Cybertruck Tri-Motor">
                                 <div class="car-info">
                                     <h3>Cybertruck Tri-Motor</h3>
@@ -717,7 +717,7 @@
                                 </div>
                             </div>
 
-<div class="car-card" data-car-name="Cybertruck Dual-Motor" data-price="79990" data-image="images/cybertruck_dual.jpg">
+                            <div class="car-card" data-car-name="Cybertruck Dual-Motor" data-price="79990" data-image="images/cybertruck_dual.jpg">
                                 <img src="images/cybertruck_dual.jpg" alt="Tesla Cybertruck Dual-Motor">
                                 <div class="car-info">
                                     <h3>Cybertruck Dual-Motor</h3>
@@ -764,7 +764,7 @@
                 </div>
             </div>
 
-<div id="history" class="page-content hidden">
+            <div id="history" class="page-content hidden">
                 <h2>⏳ Transaction History</h2>
                 <div class="content-panel">
                     <table class="min-w-full divide-y divide-gray-700">
@@ -823,20 +823,18 @@
         // --- API & UTILITY DEFINITIONS ---
        // The Fix (Using your deployed domain):
 const BASE_API_URL = 'https://teslaaai.onrender.com/api'; 
-
-// And the fetch call:
 const API_BASE_URL = 'https://teslaaai.onrender.com/api';
         const CART_STORAGE_KEY = 'tesla_ai_car_cart'; 
 
         // 4. Logout Handler Function
         function handleLogout() {
             localStorage.removeItem('userToken');
-            localStorage.removeItem('clientID'); // CRITICAL FIX: Use clientID consistently
+            localStorage.removeItem('clientID'); 
             localStorage.removeItem(CART_STORAGE_KEY); 
             window.location.href = 'login.html'; 
         }
 
-        // Function to fetch the authenticated user's profile data
+// Function to fetch the authenticated user's profile data
         async function fetchUserProfile() {
     // 1. Get the token
     const token = localStorage.getItem('userToken'); 
@@ -845,16 +843,17 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
     if (!token) {
         // If no token, redirect to login page immediately
         console.error("No token found. Redirecting to login.");
-        window.location.href = '/'; 
+        window.location.href = 'login.html'; 
         return;
     }
 
     try {
+        // CRITICAL FIX 1: Use backticks (`) for the template literal string
         const response = await fetch(`${BASE_API_URL}/client/me`, {
             method: 'GET',
-            // 3. CRITICAL: Attach the token to the header
+            // CRITICAL FIX 2: Correct Authorization header syntax using template literals
             headers: {
-                'Authorization': `Bearer ${token}`, // <-- THIS LINE IS ESSENTIAL
+                'Authorization': `Bearer ${token}`, 
                 'Content-Type': 'application/json'
             }
         });
@@ -862,7 +861,7 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
         if (response.status === 401 || response.status === 403) {
             // Handle expired/invalid token
             localStorage.removeItem('userToken');
-            window.location.href = '/'; 
+            window.location.href = 'login.html'; 
             return;
         }
 
@@ -871,15 +870,14 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
         }
 
         const data = await response.json();
-        // Successful login, now display data
-        document.getElementById('client-name-display').textContent = data.name; 
-        // ... rest of your dashboard rendering logic
+        return data; 
         
     } catch (error) {
         console.error('Network or server error:', error);
+        return null; // Return null on error so the DOMContentLoaded logic can handle the UI fallback
     }
 }
-        // --- NEW ACTIVITY / HISTORY FUNCTIONS (CRITICAL FIX: Full Implementation) ---
+        // --- NEW ACTIVITY / HISTORY FUNCTIONS ---
         
         /**
          * Renders transaction data into a specified table body (Recent Activity or History).
@@ -974,6 +972,7 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
                     
                     // Type Cell
                     row.insertCell(1).className = 'px-6 py-2 whitespace-nowrap text-sm font-medium text-white';
+
                     row.cells[1].textContent = item.type || 'Transaction';
                     
                     // Amount Cell
@@ -997,10 +996,12 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
             }
             
             try {
+                // CRITICAL FIX 3: Use backticks (`) for the template literal in fetchHistory as well
                 const response = await fetch(`${API_BASE_URL}/client/activity`, {
                     method: 'GET',
                     headers: {
-                        'Authorization': `Bearer ${token}`,
+                        // CRITICAL FIX 4: Correct Authorization header syntax
+                        'Authorization': `Bearer ${token}`, 
                     },
                 });
 
@@ -1046,7 +1047,7 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
             
             // Allow only one item (since these are high-value unique cars)
             if (cart.length > 0) {
-                alert(`⚠️ You can only purchase one vehicle at a time. Please remove the current item to add a new one.`);
+                alert('⚠️ You can only purchase one vehicle at a time. Please remove the current item to add a new one.');
                 return;
             }
             
@@ -1061,7 +1062,7 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
             alert(`✅ ${carName} added to the Exclusive Shop Cart! Navigate to "Shopping Cart" to checkout.`);
             // Automatically switch to cart page if on a desktop or if mobile is active
             if (window.location.hash !== '#cart') {
-                 window.location.hash = '#cart'; // CRITICAL FIX: Ensure hash includes '#'
+                 window.location.hash = '#cart'; 
             } else {
                  renderCart(); 
             }
@@ -1199,7 +1200,7 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
                 return; 
             }
             
-            const profileData = await fetchUserProfile(token); 
+            const profileData = await fetchUserProfile(); 
             
             if (!profileData) {
                 // If fetching failed and handleLogout wasn't called (e.g., network error)
@@ -1208,7 +1209,7 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
                 return; 
             }
 
-            // CRITICAL FIX 1: UPDATE DESTRUCTURING TO MATCH SERVER ALIASES (Assuming camelCase on clientID, profit, investment, nextPayout)
+            // CRITICAL FIX 5: DESTRUCTURING from profileData
             const { name, clientID, email, balance, profit, investment, nextPayout } = profileData; 
             
             // 1. Update Profile/UI Data
@@ -1221,9 +1222,9 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
                 }
             }
             
-            // --- CRITICAL FIX 2: UPDATE FINANCIAL STATS TO USE CORRECT VARIABLES ---
+            // --- CRITICAL FIX 6: UPDATE FINANCIAL STATS TO USE CORRECT VARIABLES ---
             if (balance !== undefined) {
-                const clientBalance = parseFloat(balance); // Use 'balance'
+                const clientBalance = parseFloat(balance); 
                 // Update Dashboard stats
                 document.getElementById('total-balance').textContent = `$${clientBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
                 document.getElementById('wallet-balance-display').textContent = clientBalance.toLocaleString('en-US', { minimumFractionDigits: 2 });
@@ -1234,8 +1235,8 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
                     document.getElementById('initial-balance-note').classList.add('hidden');
                     
                     // Logic to show $200 bonus
-                    if (clientBalance >= 200 && clientBalance < 500) { // A slightly safer check for initial/low balance
-                        document.getElementById('bonus-amount').textContent = '200.00'; // Hardcode the bonus amount if applicable
+                    if (clientBalance >= 200 && clientBalance < 500) { 
+                        document.getElementById('bonus-amount').textContent = '200.00'; 
                         document.getElementById('bonus-note').classList.remove('hidden');
                     } else {
                         document.getElementById('bonus-note').classList.add('hidden');
@@ -1247,10 +1248,10 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
             }
             
             if (profit !== undefined) {
-                const clientProfit = parseFloat(profit); // Use 'profit'
+                const clientProfit = parseFloat(profit); 
                 document.getElementById('total-profit').textContent = `$${clientProfit.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
                 
-                if (investment !== undefined && parseFloat(investment) > 0) { // Use 'investment'
+                if (investment !== undefined && parseFloat(investment) > 0) { 
                     const profitPercentage = (clientProfit / parseFloat(investment)) * 100;
                     document.getElementById('profit-percentage').textContent = `${profitPercentage.toFixed(2)}% ROI`;
                 } else {
@@ -1258,7 +1259,7 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
                 }
             }
 
-            if (investment !== undefined && parseFloat(investment) > 0) { // Use 'investment'
+            if (investment !== undefined && parseFloat(investment) > 0) { 
                  document.getElementById('active-investment').textContent = `$${parseFloat(investment).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
                  document.getElementById('active-investment-status').textContent = 'Active Plan';
                  document.getElementById('active-investment-status').classList.remove('deposit');
@@ -1298,7 +1299,6 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
             }
             
             // --- INITIAL DATA LOAD ---
-            // Note: fetchHistory now handles both dashboard and history table updates.
             fetchHistory(); 
 
             // --- 2. Navigation Logic (SPA Style) ---
@@ -1352,17 +1352,14 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
             }
 
             // --- 6. Live Support Chat Initialization (Placeholder) ---
-            // Note: This block requires adding the #chat page and elements like #chat-window to the HTML.
-            // Since the HTML is missing, this is provided for completeness but won't fully function yet.
             const chatWindow = document.getElementById('chat-window');
             const chatInput = document.getElementById('chat-input');
             const chatSendButton = document.getElementById('chat-send-button');
             
             let chatSocket = null;
             let isChatInitialized = false;
-            const clientIDForSocket = localStorage.getItem('clientID'); // Use local storage variable
+            const clientIDForSocket = clientID; 
             
-            // This function would be called when the user navigates to the #chat page
             function initializeChat() {
                 if (isChatInitialized || !clientIDForSocket || !token) return;
 
@@ -1448,7 +1445,7 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
                 }
             });
 
-            // --- 7. Real-Time Financial Updates (Socket.IO Listener - CRITICAL FIX) ---
+            // --- 7. Real-Time Financial Updates (Socket.IO Listener) ---
             if (clientID) {
                 const financialSocket = io(); // Connects to the host server
                 
@@ -1462,7 +1459,6 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
                 financialSocket.on('financial-update', (data) => {
                     console.log('Received real-time financial update:', data);
                  
-
                     // Update Total Balance
                     if (data.balance !== undefined) {
                         const balance = parseFloat(data.balance);
@@ -1509,7 +1505,7 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
                 });
 
                 // --- NEW: Listen for the 'activity-update' event (for live transactions) ---
-                financialSocket.on('activity-update', (activities) => { // Renamed 'data' to 'activities' for clarity
+                financialSocket.on('activity-update', (activities) => { 
                     console.log('Received real-time activity update:', activities);
                     
                     // Update the Dashboard Recent Activity section (top 5)
