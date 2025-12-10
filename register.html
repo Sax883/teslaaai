@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TESLAAI | Client Registration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-primary: #ef4444; /* Bright Red */
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1f2937; /* Dark Gray */
+        }
+        .text-primary { color: var(--color-primary); }
+        .bg-primary { background-color: var(--color-primary); }
+        .bg-primary:hover { background-color: #dc2626; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-md bg-gray-800 p-8 rounded-xl shadow-2xl border border-gray-700">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-primary mb-2">TESLAAI</h1>
+            <h2 class="text-xl font-semibold text-white">Client Registration</h2>
+        </div>
+
+        <form id="signup-form">
+            <div class="mb-5">
+                <label for="name" class="block text-sm font-medium text-gray-300 mb-2">Full Name</label>
+                <input 
+                    type="text" 
+                    id="name" 
+                    name="name" 
+                    required 
+                    class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
+                    placeholder="Enter your name"
+                    autocomplete="name"
+                >
+            </div>
+            <div class="mb-5">
+                <label for="email" class="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    required 
+                    class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
+                    placeholder="Enter your email"
+                    autocomplete="off"
+                >
+            </div>
+            <div class="mb-6">
+                <label for="password" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    required 
+                    class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
+                    placeholder="Create a strong password"
+                    autocomplete="new-password"
+                >
+            </div>
+
+            <div class="mb-6">
+                <label for="confirm-password" class="block text-sm font-medium text-gray-300 mb-2">Confirm Password</label>
+                <input 
+                    type="password" 
+                    id="confirm-password" 
+                    name="confirm-password" 
+                    required 
+                    class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
+                    placeholder="Confirm your password"
+                    autocomplete="new-password"
+                >
+            </div>
+
+            <div id="message-box" class="mb-4 p-3 rounded-lg text-sm text-center hidden" role="alert"></div>
+
+            <button type="submit" id="signup-btn" class="w-full py-3 bg-primary text-white font-semibold rounded-lg transition duration-200">
+                Sign Up
+            </button>
+        </form>
+
+        <div class="mt-6 text-center text-sm">
+            <p class="text-gray-400">Already have an account? 
+                <a href="login.html" class="text-primary hover:text-red-400 font-medium">Log In</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = '/api'; 
+        const form = document.getElementById('signup-form');
+        const messageBox = document.getElementById('message-box');
+        const signupBtn = document.getElementById('signup-btn');
+
+        // --- Utility Function to display alerts ---
+        function showMessage(text, type = 'error') {
+            messageBox.textContent = text;
+            messageBox.classList.remove('hidden', 'bg-red-900', 'bg-green-900', 'text-red-300', 'text-green-300');
+            
+            if (type === 'success') {
+                messageBox.classList.add('bg-green-900', 'text-green-300');
+            } else {
+                messageBox.classList.add('bg-red-900', 'text-red-300');
+            }
+        }
+
+        // --- Main Registration Logic ---
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // 1. UI State Update
+            signupBtn.textContent = 'Signing Up...';
+            signupBtn.disabled = true;
+            messageBox.classList.add('hidden');
+
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+
+            // 2. Client-Side Validation
+            if (password !== confirmPassword) {
+                showMessage('Error: Passwords do not match.', 'error');
+                signupBtn.textContent = 'Sign Up';
+                signupBtn.disabled = false;
+                return;
+            }
+
+            let response;
+            let data;
+
+            try {
+                // 3. Network Request
+                response = await fetch(`${API_BASE_URL}/register`, {
+                    method: 'POST', 
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name, email, password }),
+                });
+
+                // 4. Robust JSON Parsing
+                // Check if the response body is readable JSON before trying to parse
+                const contentType = response.headers.get("content-type");
+                
+                if (response.ok && contentType && contentType.includes("application/json")) {
+                    data = await response.json();
+                } else if (response.ok) {
+                    // Server returned 200/201 but no JSON (e.g., an empty response body)
+                    throw new Error('Server returned an unexpected empty response for registration.');
+                } else if (contentType && contentType.includes("application/json")) {
+                    // Server returned 4xx/5xx but with JSON error details
+                    data = await response.json();
+                } else {
+                    // Server returned 4xx/5xx without JSON (a raw error page/text)
+                    throw new Error(`Registration failed. Server Status: ${response.status}. Check server logs.`);
+                }
+                
+                // 5. Handle Success or JSON Error
+                if (response.ok && data.token) {
+                    showMessage('Registration successful! Redirecting to dashboard...', 'success');
+                    
+                    // Store credentials in localStorage
+                    localStorage.setItem('userToken', data.token); 
+                    localStorage.setItem('clientId', data.client.clientID); 
+                    
+                    // Redirect to the Dashboard after a short delay for auto-login
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html'; // Changed to dashboard.html for auto-login flow
+                    }, 1000); 
+
+                } else {
+                    // Handle API-specific errors (e.g., 'User already exists')
+                    showMessage(data.message || `Registration failed with status: ${response.status}`);
+                }
+            } catch (error) {
+                // Handle network/connection errors and custom errors from step 4
+                console.error('Registration Error:', error);
+                showMessage(error.message || 'Connection error. Please ensure the backend server is running.');
+            } finally {
+                // 6. Reset UI State on Failure
+                if (!response || !response.ok) { 
+                    signupBtn.textContent = 'Sign Up';
+                    signupBtn.disabled = false;
+                }
+            }
+        });
+
+        // 7. Check for existing token and redirect (optional but good UX)
+        document.addEventListener('DOMContentLoaded', () => {
+             if (localStorage.getItem('userToken')) {
+                 // If a token exists, redirect straight to dashboard
+                 window.location.href = 'dashboard.html';
+             }
+        });
+    </script>
+</body>
+</html>

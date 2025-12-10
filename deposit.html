@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeslaAi | Deposit Funds</title>
+    <link rel="stylesheet" href="style.css"> 
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* --- General Dark Theme Variables (Required for your styles to work) --- */
+        :root {
+            --color-primary: #dc2626; /* Strong Red */
+            --color-secondary: #ef4444; /* Lighter Red accent for CTAs/highlights */
+            --color-accent: #f59e0b; /* Gold/Amber */
+            
+            /* Dark Mode UI Colors */
+            --color-background-dark: #2c3541; /* Content Panel Background */
+            --color-background-darker: #111827; /* Deepest Background for Inputs/Boxes */
+            --color-border: #4b5563; /* Subtle Border */
+            --color-text-light: #9ca3af; /* Light Gray Text */
+            --color-text-dark: #fcebeb; /* Near-white Text for contrast */
+        }
+        
+        /* --- CORE RESPONSIVENESS FIX --- */
+        .dashboard-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            flex-shrink: 0;
+            background-color: #2c3541;
+            padding: 2rem 1.5rem;
+            display: flex; 
+            flex-direction: column;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 2rem;
+            width: calc(100% - 250px); 
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-layout {
+                flex-direction: column;
+            }
+            .sidebar {
+                position: fixed;
+                height: 100vh;
+                z-index: 1000;
+                transform: translateX(-100%); 
+                transition: transform 0.3s ease-in-out;
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .main-content {
+                width: 100%;
+                padding: 1rem; 
+            }
+        }
+        
+        /* --- Deposit Specific Styles --- */
+        .dashboard-body {
+            background-color: #1f2937; 
+            color: white;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .content-panel {
+            background-color: var(--color-background-dark);
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid var(--color-border);
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            background-color: var(--color-background-darker);
+            color: var(--color-text-dark);
+            box-sizing: border-box;
+        }
+
+        .cta-button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            text-align: center;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            text-decoration: none;
+            transition: background-color 0.3s;
+            background-color: var(--color-secondary);
+            color: white;
+        }
+        .cta-button:hover {
+            background-color: var(--color-primary);
+        }
+        
+        .hidden-step {
+            display: none !important;
+        }
+        
+        /* Remove step indicators since we are redirecting */
+        .step-indicator {
+            display: none;
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+
+    <div class="dashboard-layout">
+        
+        <div class="sidebar">
+            <div class="logo">TeslaAi</div>
+            <nav>
+                <a href="dashboard.html"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+            </nav>
+            <div class="sidebar-footer" style="margin-top: auto; padding-top: 30px;">
+                <p style="font-size: 0.8rem; color: var(--color-text-light);">Client ID: <span style="font-weight: 600; color: var(--color-primary);">TAI-001934</span></p>
+                <a href="login.html" style="color: var(--color-primary); font-size: 0.9rem; margin-top: 10px; display: block;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="top-bar">
+                <h1>Deposit Funds</h1>
+            </div>
+
+            <div class="content-panel" style="max-width: 800px; margin: 30px auto;">
+                
+                <div id="deposit-selection">
+                    <h2>💳 Select Deposit Amount & Network</h2>
+                    <p id="plan-info" style="color: var(--color-primary); margin-bottom: 15px; font-weight: 600; display: none;">You are depositing for the <span id="target-plan"></span> plan.</p>
+                    <p style="margin-bottom: 30px; color: var(--color-text-light);">Choose your preferred cryptocurrency network and enter the amount you wish to deposit.</p>
+
+                    <form class="deposit-form" id="deposit-form">
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label for="amount">Deposit Amount (USD)</label>
+                            <input type="number" id="amount" name="amount" placeholder="$500 minimum" min="500" required>
+                            <small id="min-amount-note" style="color: var(--color-text-light); display: block; margin-top: 5px;">Minimum deposit: $500.</small>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 30px;">
+                            <label for="method">Select Network</label>
+                            <select id="method" name="method" required>
+                                <option value="">-- Choose a Network --</option>
+                                <option value="USDT TRC20">USDT (TRC20)</option>
+                                <option value="Bitcoin BTC">Bitcoin (BTC)</option>
+                                <option value="Ethereum ERC20">Ethereum (ERC20)</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="cta-button large" style="width: 100%;">Proceed to Checkout</button>
+                    </form>
+                </div>
+                
+                </div>
+        </div>
+    </div>
+
+    <script>
+        const plans = {
+            "Starter": { min: 500 },
+            "Premium": { min: 5000 },
+            "Elite": { min: 20000 },
+        };
+        
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const planName = getQueryParam('plan');
+            const amountInput = document.getElementById('amount');
+            const minAmountNote = document.getElementById('min-amount-note');
+            
+            // 1. Handle Investment Plan Pre-fill
+            if (planName) {
+                const planKey = Object.keys(plans).find(key => key.toLowerCase() === planName.toLowerCase());
+
+                if (planKey) {
+                    const min = plans[planKey].min;
+                    document.getElementById('plan-info').style.display = 'block';
+                    document.getElementById('target-plan').textContent = planKey + ' Plan';
+                    amountInput.value = min;
+                    amountInput.min = min;
+                    amountInput.placeholder = '$' + min + ' minimum';
+                    minAmountNote.textContent = 'Minimum deposit for ' + planKey + ' Plan: $' + min.toLocaleString() + '.';
+                }
+            } else {
+                // Default minimum
+                amountInput.min = 500;
+            }
+
+            // 2. Handle Form Submission (Redirects to checkout.html)
+            document.getElementById('deposit-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const amount = parseFloat(amountInput.value).toFixed(2);
+                
+                // Final validation (should be caught by the form, but good practice)
+                if (isNaN(amount) || amount < parseFloat(amountInput.min)) {
+                    alert('Please enter a valid amount and meet the minimum deposit.');
+                    return;
+                }
+                
+                // Construct the redirect URL for checkout.html
+                // We use mode=deposit and pass the price. We don't need the network here
+                // as the checkout page already prompts for the network selection.
+                const redirectUrl = `checkout.html?mode=deposit&price=${amount}`;
+                
+                // Perform the redirection
+                window.location.href = redirectUrl;
+            });
+        });
+    </script>
+</body>
+</html>

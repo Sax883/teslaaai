@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeslaAi | Transaction Checkout</title>
+    <link rel="stylesheet" href="style.css"> 
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Define variables */
+        :root {
+            --color-primary: #ef4444; /* Strong Red */
+            --color-secondary: #fcd34d; /* Yellow/Gold accent */
+            --color-accent: #3b82f6; /* Blue accent */
+            --color-text-dark: #1f2937;
+            --color-text-light: #9ca3af;
+            --color-background-dark: #111827; 
+            --color-background-light: #2c3541; 
+            --color-border: #4b5563;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--color-background-dark);
+            color: white;
+            margin: 0;
+        }
+        .dashboard-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        /* Mobile Fit: Hide sidebar on small screens */
+        .sidebar {
+            display: none; 
+            background-color: var(--color-background-light);
+            padding: 2rem 1.5rem;
+            width: 250px;
+            flex-shrink: 0;
+        }
+        @media (min-width: 768px) {
+            .sidebar {
+                display: flex; /* Show sidebar on tablets/desktops */
+                flex-direction: column;
+            }
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 1rem; /* Smaller padding for mobile */
+            background-color: var(--color-background-dark); 
+        }
+        @media (min-width: 768px) {
+            .main-content {
+                padding: 2rem;
+            }
+        }
+
+        /* Existing styles for structure and components */
+        .sidebar .logo {
+            font-size: 1.5rem; font-weight: 700; color: var(--color-primary); margin-bottom: 2rem; text-align: center;
+        }
+        .sidebar nav a {
+            display: flex; align-items: center; padding: 0.75rem 1rem; margin-bottom: 0.5rem; border-radius: 0.75rem; color: #d1d5db; transition: background-color 0.2s, color 0.2s; text-decoration: none; font-weight: 500;
+        }
+        .sidebar-footer {
+            margin-top: auto; padding-top: 20px; border-top: 1px solid var(--color-border);
+        }
+        .top-bar {
+            display: flex; justify-content: flex-start; align-items: center; padding-bottom: 1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--color-border);
+        }
+        .top-bar h1 {
+            font-size: 1.5rem; font-weight: 700;
+        }
+        .content-panel {
+            background-color: var(--color-background-light); border: 1px solid var(--color-border); border-radius: 0.75rem; padding: 1rem; /* Smaller padding for mobile */
+        }
+        @media (min-width: 768px) {
+            .content-panel {
+                padding: 2rem;
+            }
+        }
+        .checkout-box {
+            background-color: var(--color-background-dark); border: 1px solid var(--color-primary); padding: 20px; border-radius: 12px; text-align: center;
+        }
+        .cta-button {
+            padding: 12px; margin-top: 20px; text-decoration: none; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; background-color: var(--color-accent); color: white; transition: background-color 0.2s;
+        }
+        .copy-button {
+            background-color: var(--color-secondary); color: var(--color-background-dark);
+        }
+        
+        /* Step Indicators for Mobile */
+        .step-indicator {
+            display: flex; justify-content: space-between; margin-bottom: 30px; 
+            max-width: 500px; margin-left: auto; margin-right: auto;
+            font-size: 0.8rem;
+        }
+
+        .step-indicator > div {
+            padding: 8px 10px; 
+            border-bottom: 3px solid var(--color-border);
+            color: var(--color-text-light);
+            font-weight: 600;
+            flex: 1; 
+            text-align: center;
+            transition: border-bottom-color 0.3s, color 0.3s;
+        }
+
+        .step-indicator .active-step {
+            border-bottom-color: var(--color-primary);
+            color: var(--color-primary);
+        }
+        
+        /* CRITICAL: Class to control the sequential view */
+        .hidden-step {
+            display: none !important;
+        }
+
+        /* List and Button Styling */
+        .item-list li {
+            display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--color-border); font-size: 1rem;
+        }
+        .item-list .total {
+            border-bottom: none;
+            border-top: 2px solid var(--color-primary); font-weight: 700; font-size: 1.3rem; margin-top: 15px;
+            padding-top: 15px;
+        }
+        .address-box {
+            display: flex; /* Flex is needed for the desktop view */
+            flex-direction: column; /* Stack address and button on mobile */
+            align-items: stretch;
+            background-color: var(--color-background-light);
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        .address-box code {
+            word-break: break-all;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: var(--color-secondary);
+        }
+        .copy-button {
+            width: 100%;
+            margin-left: 0;
+        }
+        @media (min-width: 600px) {
+            .address-box {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+            .address-box code {
+                 margin-bottom: 0;
+            }
+            .copy-button {
+                width: auto;
+                margin-left: 15px;
+                padding: 8px 15px;
+            }
+        }
+        .qr-code-placeholder {
+            padding: 30px;
+            background-color: var(--color-background-light);
+            border-radius: 8px;
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+
+    <div class="dashboard-layout flex">
+        
+        <div class="sidebar">
+            <div class="logo">TeslaAi</div>
+            <nav>
+                <a href="dashboard.html" class="active"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+            </nav>
+            <div class="sidebar-footer">
+                <p style="font-size: 0.8rem; color: var(--color-text-light);">Client ID: <span style="font-weight: 600; color: var(--color-primary);">TAI-001934</span></p>
+                <a href="login.html" style="color: var(--color-primary); font-size: 0.9rem; margin-top: 10px; display: block;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="top-bar">
+                <h1>Transaction Checkout</h1>
+            </div>
+
+            <div class="step-indicator">
+                <div id="step-1" class="active-step">1. Confirm</div>
+                <div id="step-2">2. Payment</div>
+                <div id="step-3">3. Success</div>
+            </div>
+
+            <div class="content-panel" style="max-width: 800px; margin: 0 auto;">
+                
+                <div id="checkout-confirmation">
+                    <h2>🛒 Transaction Summary</h2>
+                    <p id="summary-text" style="color: var(--color-text-light); margin-bottom: 30px;">Please confirm the details of your selected transaction.</p>
+
+                    <div class="checkout-box" style="text-align: left;">
+                        <ul class="item-list">
+                            <li><strong>Transaction Type:</strong> <span id="item-type">N/A</span></li>
+                            <li><strong>Item/Plan:</strong> <span id="item-name">N/A</span></li>
+                            <li><strong>Amount (USD):</strong> <span id="item-price">N/A</span></li>
+                            <li><strong>Recipient:</strong> Client Registered Account</li>
+                            <li class="total"><strong>Total Due:</strong> <span id="total-due">N/A</span></li>
+                        </ul>
+                        
+                        <form class="checkout-form" id="payment-selection-form">
+                            <h3 style="color: var(--color-primary); margin-top: 25px; margin-bottom: 15px;">Select Crypto Network</h3>
+                            <div class="form-group" style="margin-bottom: 30px;">
+                                <label for="method" style="display: block; margin-bottom: 5px;">Select Cryptocurrency Network</label>
+                                <select id="method" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--color-border); background-color: var(--color-background-dark); color: white;">
+                                    <option value="">-- Choose a Network --</option>
+                                    <option value="USDT TRC20" data-currency="USDT" data-address="TG6HZsf2Ji6t5NLZ5PLjJrXJWpjUTtSEZg">USDT (TRC20)</option>
+                                    <option value="Bitcoin BTC" data-currency="BTC" data-address="bc1ql2aaawq405y8sgws244224a5fy2qrxv637naqm">Bitcoin (BTC)</option>
+                                    <option value="Ethereum ERC20" data-currency="ETH" data-address="0x13758f519d89e10C6bf04A2bd656122b8C5a9293">Ethereum (ERC20)</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="cta-button large" style="width: 100%;">Proceed to Crypto Payment</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <div id="crypto-payment" class="hidden-step checkout-box">
+                    <h2>🔒 Finalize Crypto Payment</h2>
+                    <p style="color: var(--color-text-light); margin-bottom: 25px;">Please send the exact total amount to the address below. You must include a network fee.</p>
+
+                    <div class="checkout-details">
+                        <h3>Total Amount to Send: <span id="checkout-amount-crypto" style="color: var(--color-primary); font-size: 1.5rem;"></span></h3>
+                        <p style="color: var(--color-text-light);">Network: <span id="checkout-network"></span></p>
+                        <div class="qr-code-placeholder">
+                            <i class="fas fa-qrcode" style="font-size: 3rem; color: var(--color-text-light);"></i>
+                            <span id="qr-code-text" style="margin-top: 10px;">QR Code Placeholder</span>
+                        </div>
+
+                        <p style="text-align: left; margin-top: 20px; color: var(--color-text-light); font-weight: 500;">Recipient Wallet Address:</p>
+                        <div class="address-box">
+                            <code id="checkout-address"></code>
+                            <button class="copy-button cta-button" onclick="copyAddress()"><i class="fas fa-copy"></i> Copy</button>
+                        </div>
+                    </div>
+
+                    <div class="note" style="margin-top: 30px; padding: 15px; background-color: rgba(239, 68, 68, 0.1); border-left: 5px solid var(--color-accent); color: white; text-align: left;">
+                        <i class="fas fa-exclamation-triangle" style="color: var(--color-accent);"></i> CRITICAL: Only send the selected currency to this address. Sending a different coin will result in permanent loss.
+                    </div>
+
+                    <button class="cta-button" onclick="confirmPaymentSent()" style="width: 100%; margin-top: 30px; background-color: var(--color-secondary); color: var(--color-background-dark);">I Have Sent Payment</button>
+                </div>
+
+
+                <div id="purchase-success" class="hidden-step checkout-box">
+                    <h2>✅ Payment Confirmation Received!</h2>
+                    <p style="color: var(--color-text-light); margin-bottom: 25px;">Your transaction for <span id="confirmed-item"></span> has been registered and is pending network confirmation.</p>
+                    
+                    <div style="padding: 20px; background-color: var(--color-background-dark); border-radius: 8px;">
+                        <p style="font-weight: 600; color: var(--color-primary);">Tracking Transaction...</p>
+                        <p id="success-message" style="margin-top: 10px; color: var(--color-text-light); font-size: 0.9rem;">Your transaction is being processed. Once confirmed, your funds will be credited shortly.</p>
+                        <p style="margin-top: 15px; font-size: 0.8rem; color: var(--color-text-light);">You can safely close this page. Check your History for status updates.</p>
+                    </div>
+
+                    <a href="dashboard.html" class="cta-button" style="width: 100%; margin-top: 30px; background-color: var(--color-primary);">Return to Dashboard</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to get query parameters
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        // --- DOM Elements ---
+        const step1Indicator = document.getElementById('step-1');
+        const step2Indicator = document.getElementById('step-2');
+        const step3Indicator = document.getElementById('step-3');
+        const view1 = document.getElementById('checkout-confirmation');
+        const view2 = document.getElementById('crypto-payment');
+        const view3 = document.getElementById('purchase-success');
+        const form = document.getElementById('payment-selection-form');
+
+        // --- GLOBAL VARIABLES (CRITICAL) ---
+        let purchasedItemName = ''; 
+        let preselectedNetwork = ''; 
+        // ------------------------------------
+
+        // 🟢 Saves the transaction details to the browser's local storage
+        function saveTransactionToHistory(mode, item, price, network) {
+            const transactions = JSON.parse(localStorage.getItem('transactionHistory')) || [];
+            
+            let type = 'Deposit';
+            if (mode === 'plan') {
+                type = 'Plan Purchase';
+            } else if (mode === 'car') {
+                type = 'Vehicle Purchase';
+            }
+            
+            const newTransaction = {
+                id: Date.now(),
+                date: new Date().toLocaleDateString('en-US'),
+                time: new Date().toLocaleTimeString('en-US'),
+                type: type,
+                description: purchasedItemName || item.replace(/_/g, ' '), // Use the globally stored name
+                amount: parseFloat(price), 
+                network: network,
+                status: 'Pending Confirmation', 
+            };
+
+            transactions.unshift(newTransaction);
+            localStorage.setItem('transactionHistory', JSON.stringify(transactions));
+            console.log('Transaction saved to history:', newTransaction);
+        }
+        
+        function updateSteps(activeStep) {
+            // Reset all step classes
+            step1Indicator.classList.remove('active-step');
+            step2Indicator.classList.remove('active-step');
+            step3Indicator.classList.remove('active-step');
+            // Hide all views
+            view1.classList.add('hidden-step');
+            view2.classList.add('hidden-step');
+            view3.classList.add('hidden-step');
+
+            if (activeStep === 1) {
+                step1Indicator.classList.add('active-step');
+                view1.classList.remove('hidden-step');
+            } else if (activeStep === 2) {
+                step1Indicator.classList.add('active-step');
+                step2Indicator.classList.add('active-step');
+                view2.classList.remove('hidden-step');
+            } else if (activeStep === 3) {
+                step1Indicator.classList.add('active-step');
+                step2Indicator.classList.add('active-step');
+                step3Indicator.classList.add('active-step');
+                view3.classList.remove('hidden-step');
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set initial view to Step 1
+            updateSteps(1); 
+            
+            // Get URL parameters
+            const mode = getQueryParam('mode'); 
+            const itemName = getQueryParam('item'); 
+            const price = getQueryParam('price');
+            const initialNetwork = getQueryParam('network');
+            
+            // Initial Validation and Parameter Check
+            if (!price || (!mode && !itemName)) {
+                alert('Missing required transaction details. Returning to dashboard.');
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            // Determine Transaction Context and Item Name (Sets the global variable purchasedItemName)
+            let itemContext = 'N/A';
+            let transactionTypeDisplay = 'Purchase';
+            let successMessage = '';
+
+            if (mode === 'deposit') {
+                transactionTypeDisplay = 'Deposit';
+                itemContext = 'Fund Deposit';
+                purchasedItemName = itemContext; 
+                document.querySelector('.top-bar h1').textContent = 'Deposit Funds Checkout';
+                document.getElementById('summary-text').textContent = 'Please confirm the details of your fund deposit.';
+                successMessage = 'Your deposit is being processed. Once confirmed, your funds will be credited shortly.';
+            } else if (mode === 'plan' && itemName) {
+                transactionTypeDisplay = 'Investment Plan';
+                itemContext = itemName.replace(/_/g, ' ') + ' Plan';
+                purchasedItemName = itemContext; 
+                document.querySelector('.top-bar h1').textContent = 'Investment Plan Checkout';
+                document.getElementById('summary-text').textContent = 'Please confirm the details of your selected investment plan.';
+                successMessage = 'Your investment has been registered and is pending network confirmation. Your plan will activate shortly.';
+            } else if (itemName) { // Assumed Car Purchase
+                transactionTypeDisplay = 'Luxury Vehicle';
+                itemContext = itemName.replace(/_/g, ' ');
+                purchasedItemName = itemContext; 
+                document.querySelector('.top-bar h1').textContent = 'Luxury Vehicle Checkout';
+                document.getElementById('summary-text').textContent = 'Please confirm the details of your selected Tesla vehicle purchase.';
+                successMessage = 'Once confirmed, the Tesla sales team will contact you within 48 hours via your registered email to finalize delivery details.';
+            }
+
+            // Update success message in step 3
+            document.getElementById('success-message').textContent = successMessage;
+
+            // Update Display Fields (Step 1)
+            const formattedPrice = parseFloat(price).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+            
+            document.getElementById('item-type').textContent = transactionTypeDisplay;
+            document.getElementById('item-name').textContent = itemContext;
+            document.getElementById('item-price').textContent = formattedPrice;
+            document.getElementById('total-due').textContent = formattedPrice;
+
+            // Handle Initial Network Pre-selection
+            if (initialNetwork) {
+                const selectElement = document.getElementById('method');
+                for (let i = 0; i < selectElement.options.length; i++) {
+                    if (selectElement.options[i].value === initialNetwork) {
+                        selectElement.value = initialNetwork;
+                        break;
+                    }
+                }
+            }
+            
+            // Set up Form Submission (Step 1 to Step 2)
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const networkSelect = document.getElementById('method');
+                const selectedOption = networkSelect.options[networkSelect.selectedIndex];
+                
+                const network = selectedOption.value;
+                const address = selectedOption.getAttribute('data-address');
+                const currency = selectedOption.getAttribute('data-currency');
+                
+                if (!network) {
+                    alert('Please select a cryptocurrency network.');
+                    return;
+                }
+
+                // Save the selected network for use in confirmPaymentSent
+                preselectedNetwork = network;
+
+                // Update checkout details for Step 2
+                document.getElementById('checkout-amount-crypto').innerText = formattedPrice + ' (' + currency + ')';
+                document.getElementById('checkout-network').innerText = network;
+                document.getElementById('checkout-address').innerText = address;
+                document.getElementById('qr-code-text').innerText = 'Scan ' + currency + ' QR Code'; 
+
+                // Move to Step 2
+                updateSteps(2);
+            });
+            
+        });
+        
+        // 🚨 CONFIRMATION FUNCTION (This is the critical function that was fixed)
+        window.confirmPaymentSent = function() {
+            const mode = getQueryParam('mode'); 
+            const itemName = getQueryParam('item'); 
+            const price = getQueryParam('price');
+            
+            // Use the globally stored network variable
+            const finalNetwork = preselectedNetwork || 'N/A';
+            
+            // 1. Save Transaction History
+            saveTransactionToHistory(mode, itemName, price, finalNetwork);
+
+            // 2. Update Step 3 Display Text
+            document.getElementById('confirmed-item').innerText = purchasedItemName;
+            
+            // 3. Move to Step 3 (Success)
+            updateSteps(3);
+        }
+
+        window.copyAddress = function() {
+            const address = document.getElementById('checkout-address').innerText;
+            navigator.clipboard.writeText(address).then(() => {
+                alert('Address copied to clipboard!');
+            }, (err) => {
+                console.error('Could not copy text: ', err);
+                alert('Failed to copy address.');
+            });
+        }
+    </script>
+</body>
+</html>

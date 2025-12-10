@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeslaAi | Luxury Car Checkout</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Reusing and adapting Deposit/Withdrawal Styles for Checkout */
+        .checkout-box {
+            background-color: var(--color-background-light);
+            border: 1px solid var(--color-primary);
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .checkout-details h3 {
+            color: var(--color-accent);
+            margin-bottom: 10px;
+        }
+
+        .address-box {
+            background-color: var(--color-background-dark);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px dashed var(--color-border);
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .address-box code {
+            word-break: break-all;
+            font-size: 0.9rem;
+            color: var(--color-secondary);
+            font-weight: 600;
+        }
+
+        .copy-button {
+            padding: 8px 15px;
+            background-color: var(--color-secondary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-left: 15px;
+            transition: background-color 0.3s;
+        }
+
+        .copy-button:hover {
+            background-color: var(--color-primary);
+        }
+
+        .qr-code-placeholder {
+            margin: 30px auto;
+            width: 150px;
+            height: 150px;
+            background-color: var(--color-background-dark);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: var(--color-text-light);
+            flex-direction: column;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .step-indicator > div {
+            padding: 8px 20px;
+            margin: 0 10px;
+            border-bottom: 3px solid var(--color-border);
+            color: var(--color-text-light);
+            font-weight: 600;
+        }
+
+        .step-indicator .active-step {
+            border-bottom-color: var(--color-primary);
+            color: var(--color-primary);
+        }
+        
+        /* New Styles to control visibility */
+        .hidden-step {
+            display: none !important;
+        }
+        
+        .item-list {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+        .item-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px dashed var(--color-border);
+            font-size: 1.1rem;
+        }
+        .item-list li strong {
+            color: var(--color-text-dark);
+        }
+        .item-list .total {
+            border-top: 2px solid var(--color-primary);
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+
+    <div class="dashboard-layout">
+        
+        <div class="sidebar">
+            <div class="logo">TeslaAi</div>
+            <nav>
+                <a href="dashboard.html" class="active"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+            </nav>
+            <div class="sidebar-footer">
+                <p style="font-size: 0.8rem; color: var(--color-text-light);">Client ID: <span style="font-weight: 600; color: var(--color-primary);">TAI-001934</span></p>
+                <a href="login.html" style="color: var(--color-primary); font-size: 0.9rem; margin-top: 10px; display: block;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="top-bar">
+                <h1>Luxury Vehicle Checkout</h1>
+            </div>
+
+            <div class="step-indicator">
+                <div id="step-1" class="active-step">1. Confirm Details</div>
+                <div id="step-2">2. Crypto Payment</div>
+                <div id="step-3">3. Final Confirmation</div>
+            </div>
+
+            <div class="content-panel" style="max-width: 800px; margin: 0 auto;">
+                
+                <div id="checkout-confirmation" class="active-interface">
+                    <h2>🛒 Order Summary</h2>
+                    <p style="color: var(--color-text-light); margin-bottom: 30px;">Please confirm the details of your selected Tesla vehicle purchase.</p>
+
+                    <div class="checkout-box" style="text-align: left;">
+                        <ul class="item-list">
+                            <li><strong>Item:</strong> <span id="item-name">N/A</span></li>
+                            <li><strong>Price (USD):</strong> <span id="item-price">N/A</span></li>
+                            <li><strong>Destination:</strong> Client Registered Address</li>
+                            <li class="total"><strong>Total Due:</strong> <span id="total-due">N/A</span></li>
+                        </ul>
+                        
+                        <form class="checkout-form" id="payment-selection-form">
+                            <h3 style="color: var(--color-primary); margin-top: 25px; margin-bottom: 15px;">Select Payment Method</h3>
+                            <div class="form-group" style="margin-bottom: 30px;">
+                                <label for="method">Select Cryptocurrency Network</label>
+                                <select id="method" required>
+                                    <option value="">-- Choose a Network --</option>
+                                    <option value="USDT TRC20" data-currency="USDT" data-address="TF9FpD1e3G2aH7jK8L9mN4oP5qR6sT7uV8wX9yZ1aB2c3D">USDT (TRC20)</option>
+                                    <option value="Bitcoin BTC" data-currency="BTC" data-address="1BvBMSEYstWetqTFn5Au4m4GFy7PHTaFWN">Bitcoin (BTC)</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="cta-button large" style="width: 100%;">Proceed to Crypto Payment</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <div id="crypto-payment" class="hidden-step checkout-box">
+                    <h2>🔒 Finalize Crypto Payment</h2>
+                    <p style="color: var(--color-text-light); margin-bottom: 25px;">Please send the exact total amount to the address below. You must include a network fee.</p>
+
+                    <div class="checkout-details">
+                        <h3>Total Amount to Send: <span id="checkout-amount-crypto" style="color: var(--color-primary); font-size: 1.5rem;"></span></h3>
+                        <p style="color: var(--color-text-light);">Network: <span id="checkout-network"></span></p>
+                        <div class="qr-code-placeholder">
+                            <span id="qr-code-text">QR Code Placeholder</span>
+                        </div>
+
+                        <p style="text-align: left; margin-top: 20px; color: var(--color-text-light);">Recipient Wallet Address:</p>
+                        <div class="address-box">
+                            <code id="checkout-address"></code>
+                            <button class="copy-button" onclick="copyAddress()"><i class="fas fa-copy"></i> Copy</button>
+                        </div>
+                    </div>
+
+                    <div class="note" style="margin-top: 30px; padding: 15px; background-color: rgba(220, 38, 38, 0.1); border-left: 5px solid var(--color-accent); color: var(--color-text-dark);">
+                        <i class="fas fa-exclamation-triangle"></i> CRITICAL: Only send the selected currency to this address. Sending a different coin will result in permanent loss.
+                    </div>
+
+                    <button class="cta-button" onclick="confirmPaymentSent()" style="margin-top: 30px;">I Have Sent Payment</button>
+                </div>
+
+                <div id="purchase-success" class="hidden-step checkout-box">
+                    <h2>✅ Payment Confirmation Received!</h2>
+                    <p style="color: var(--color-text-light); margin-bottom: 25px;">Your purchase for the <span id="confirmed-item"></span> has been registered and is pending network confirmation.</p>
+                    
+                    <div style="padding: 20px; background-color: var(--color-background-dark); border-radius: 8px;">
+                        <p style="font-weight: 600; color: var(--color-secondary);">Tracking Purchase...</p>
+                        <p style="margin-top: 10px; color: var(--color-text-light); font-size: 0.9rem;">Once confirmed, the Tesla sales team will contact you within 48 hours via your registered email to finalize delivery details.</p>
+                        <p style="margin-top: 15px; font-size: 0.8rem; color: #94a3b8;">You can safely close this page. Check your History for status updates.</p>
+                    </div>
+
+                    <a href="dashboard.html" class="cta-button" style="margin-top: 30px; background-color: var(--color-secondary);">Return to Dashboard</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to get query parameters
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        // --- Step Indicators and Views Control ---
+        const step1 = document.getElementById('step-1');
+        const step2 = document.getElementById('step-2');
+        const step3 = document.getElementById('step-3');
+        const view1 = document.getElementById('checkout-confirmation');
+        const view2 = document.getElementById('crypto-payment');
+        const view3 = document.getElementById('purchase-success');
+
+        let purchasedItemName = ''; // To store the item name globally for step 3
+
+        function updateSteps(activeStep) {
+            // Reset all step classes
+            step1.classList.remove('active-step');
+            step2.classList.remove('active-step');
+            step3.classList.remove('active-step');
+            // Hide all views
+            view1.classList.add('hidden-step');
+            view2.classList.add('hidden-step');
+            view3.classList.add('hidden-step');
+
+            if (activeStep === 1) {
+                step1.classList.add('active-step');
+                view1.classList.remove('hidden-step');
+            } else if (activeStep === 2) {
+                step2.classList.add('active-step');
+                view2.classList.remove('hidden-step');
+            } else if (activeStep === 3) {
+                step3.classList.add('active-step');
+                view3.classList.remove('hidden-step');
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const rawItemName = getQueryParam('item');
+            const price = getQueryParam('price');
+            
+            if (!rawItemName || !price) {
+                alert('No item selected for purchase. Returning to dashboard.');
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            // Format item name and price for display
+            purchasedItemName = rawItemName.replace(/_/g, ' '); // Replace underscores with spaces
+            const formattedPrice = parseFloat(price).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+            
+            // Update display fields (Step 1)
+            document.getElementById('item-name').textContent = purchasedItemName;
+            document.getElementById('item-price').textContent = formattedPrice;
+            document.getElementById('total-due').textContent = formattedPrice;
+            
+            // Set up form submission (Step 1 to Step 2)
+            document.getElementById('payment-selection-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const networkSelect = document.getElementById('method');
+                const selectedOption = networkSelect.options[networkSelect.selectedIndex];
+                
+                // Get attributes from the selected option
+                const network = selectedOption.value;
+                const address = selectedOption.getAttribute('data-address');
+                const currency = selectedOption.getAttribute('data-currency');
+                
+                if (!network) {
+                     alert('Please select a cryptocurrency network.');
+                     return;
+                }
+
+                // Update checkout details for Step 2
+                document.getElementById('checkout-amount-crypto').innerText = formattedPrice + ' (' + currency + ')';
+                document.getElementById('checkout-network').innerText = network;
+                document.getElementById('checkout-address').innerText = address;
+                document.getElementById('qr-code-text').innerText = 'Scan ' + currency + ' QR Code'; 
+
+                // Move to Step 2
+                updateSteps(2);
+            });
+            
+        });
+        
+        // Function to move to Step 3 (I Have Sent Payment - FINAL CONFIRMATION)
+        function confirmPaymentSent() {
+            // Update confirmation details for Step 3
+            document.getElementById('confirmed-item').innerText = purchasedItemName;
+            
+            // Move to Step 3
+            updateSteps(3);
+        }
+
+        function copyAddress() {
+            const address = document.getElementById('checkout-address').innerText;
+            navigator.clipboard.writeText(address).then(() => {
+                alert('Address copied to clipboard!');
+            }, (err) => {
+                console.error('Could not copy text: ', err);
+                alert('Failed to copy address.');
+            });
+        }
+    </script>
+</body>
+</html>

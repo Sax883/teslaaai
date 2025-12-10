@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TESLAAI | Client Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --color-primary: #ef4444; 
+            --color-background-dark: #1f2937; 
+            --color-background-light: #2c3541; 
+            --color-border: #4b5563;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-background-dark);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .auth-container {
+            background-color: var(--color-background-light);
+            padding: 2.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid var(--color-border);
+        }
+        .logo {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--color-primary);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1.5rem;
+            background-color: var(--color-background-dark);
+            border: 1px solid var(--color-border);
+            border-radius: 0.5rem;
+            color: white;
+            transition: border-color 0.2s;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+        .btn-primary {
+            width: 100%;
+            padding: 1rem;
+            background-color: var(--color-primary);
+            color: white;
+            font-weight: 700;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #dc2626; 
+        }
+        .switch-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+        }
+        .switch-link a {
+            color: var(--color-primary);
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .hidden {
+            display: none;
+        }
+        .alert {
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        .alert-error {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--color-primary);
+            border: 1px solid var(--color-primary);
+        }
+        .alert-success {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid #10b981;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="logo">TESLAAI</div>
+
+        <div id="login-form-container">
+            <h2 class="text-xl font-semibold mb-4 text-center">Client Login</h2>
+            <div id="login-message" class="alert hidden alert-error"></div>
+            <form id="login-form">
+                <div class="input-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" required>
+                </div>
+                <div class="input-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required>
+                </div>
+                <button type="submit" class="btn-primary">Sign In</button>
+            </form>
+            <div class="switch-link">
+                Don't have an account? <a href="register.html">Register here</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = '/api'; 
+        
+        // --- UI Utility Functions ---
+        function showAlert(id, message, type = 'error') {
+            const el = document.getElementById(id);
+            el.textContent = message;
+            el.className = `alert ${type === 'error' ? 'alert-error' : 'alert-success'}`;
+            el.classList.remove('hidden');
+        }
+
+        // --- Authentication Function ---
+        async function authenticate(endpoint, data) {
+            let response;
+            try {
+                // The endpoint will be /api/client-login
+                response = await fetch(`${API_BASE_URL}/${endpoint}`, {
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+            } catch (networkError) {
+                // Catches network failures (server not running, CORS issue, etc.)
+                console.error(networkError);
+                throw new Error('Network error: Could not connect to the server.');
+            }
+            
+            // CRITICAL FIX: Try to parse JSON, but handle non-JSON responses (like empty/broken)
+            let result;
+            try {
+                result = await response.json();
+            } catch (jsonError) {
+                console.error("JSON Parsing Error:", jsonError);
+                // This is the common cause of "unexpected end of json script"
+                throw new Error('Server returned an invalid or incomplete response. Please check server logs.');
+            }
+            
+            if (!response.ok) {
+                // If response status is 4xx or 5xx, throw the error message from the JSON body
+                throw new Error(result.message || 'Authentication failed.');
+            }
+
+            return result; 
+        }
+        
+        // --- Event Listener ---
+        
+        // Handle Login Submission
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const loginBtn = document.querySelector('#login-form button');
+            loginBtn.textContent = 'Signing in...';
+            loginBtn.disabled = true;
+            document.getElementById('login-message').classList.add('hidden');
+
+            try {
+                // TARGETS: /api/client-login 
+                const result = await authenticate('client-login', { email, password });
+
+                // Store token and user data
+                localStorage.setItem('userToken', result.token);
+                localStorage.setItem('userName', result.name);
+                localStorage.setItem('clientId', result.clientID);
+                
+                // Redirect to the dashboard
+                window.location.href = 'dashboard.html';
+
+            } catch (error) {
+                showAlert('login-message', error.message || 'Invalid credentials or server error.');
+            } finally {
+                loginBtn.textContent = 'Sign In';
+                loginBtn.disabled = false;
+            }
+        });
+
+        // Check if user is already logged in
+        document.addEventListener('DOMContentLoaded', () => {
+             if (localStorage.getItem('userToken')) {
+                 // If a token exists, redirect straight to dashboard
+                 window.location.href = 'dashboard.html';
+             }
+        });
+    </script>
+</body>
+</html>

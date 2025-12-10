@@ -1,0 +1,761 @@
+/* General Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* Red and White Color Palette */
+    --color-primary: #dc2626; /* Strong Red */
+    --color-secondary: #ef4444; /* Slightly lighter Red accent */
+    --color-background-dark: #f8fafc; /* Near White Background */
+    --color-background-light: #ffffff; /* Pure White for cards/sections */
+    --color-text-dark: #1f2937; /* Dark Gray for main text */
+    --color-text-light: #4b5563; /* Medium Gray for secondary text */
+    --color-success: #22c55e; /* Green for success/growth (can be kept or changed) */
+    --color-accent: #f59e0b; /* Gold/Amber for featured items (kept for contrast) */
+    --color-border: #e2e8f0; /* Light Gray border */
+    --font-family: 'Poppins', sans-serif;
+    --border-radius: 8px;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--color-background-dark); /* Main light background */
+    color: var(--color-text-dark); /* Main dark text color */
+    line-height: 1.6;
+    scroll-behavior: smooth;
+}
+
+a {
+    color: var(--color-primary); /* Red links */
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+a:hover {
+    color: var(--color-text-dark); /* Darker on hover */
+}
+
+/* --- Navigation Bar --- */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 5%;
+    background-color: var(--color-background-light); /* White navbar */
+    border-bottom: 1px solid var(--color-border);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.logo {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--color-primary); /* Red logo */
+    letter-spacing: 1px;
+}
+
+.navbar nav a {
+    margin-left: 20px;
+    font-weight: 400;
+    color: var(--color-text-dark); /* Dark text for nav links */
+}
+.navbar nav a:hover {
+    color: var(--color-primary); /* Red on hover */
+}
+
+/* Call-to-Action Button Style */
+.cta-button {
+    background-color: var(--color-primary); /* Red button */
+    color: white !important;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    transition: background-color 0.3s, transform 0.2s;
+    font-weight: 600;
+}
+
+.cta-button:hover {
+    background-color: var(--color-secondary); /* Lighter red on hover */
+    transform: translateY(-2px);
+}
+
+.cta-button.large {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    margin-top: 20px;
+    display: inline-block;
+}
+
+/* --- Hero Section --- */
+.hero-section {
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 4rem 5%;
+    /* Red overlay on potential background image, or just a solid red background */
+    background: linear-gradient(rgba(220, 38, 38, 0.8), rgba(220, 38, 38, 0.8)), url('placeholder-background.jpg'); 
+    background-size: cover;
+    background-position: center;
+    color: white; /* White text on red background */
+}
+
+.hero-section h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+    color: white;
+}
+
+.hero-section p {
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+    color: #fcebeb; /* Very light red/pink for secondary text */
+}
+
+/* --- Content Sections --- */
+.content-section {
+    padding: 4rem 5%;
+    text-align: center;
+    background-color: var(--color-background-light); /* White background for content sections */
+    border-bottom: 1px solid var(--color-border);
+    clear: both; /* Fixes alignment by clearing floats */
+}
+
+.content-section:nth-of-type(even) { /* Slightly off-white for alternating sections */
+    background-color: var(--color-background-dark);
+}
+
+.content-section h2 {
+    font-size: 2.2rem;
+    margin-bottom: 2rem;
+    color: var(--color-primary); /* Red headings */
+    font-weight: 600;
+}
+
+.professional-text {
+    max-width: 800px;
+    margin: 0 auto;
+    font-size: 1.1rem;
+    color: var(--color-text-dark); /* Dark text on light background */
+}
+
+/* --- Alignment Fix for About Section --- */
+.about-section {
+    padding-bottom: 5rem;
+}
+
+
+/* --- Investment Plans (index.html & investment_plans.html) --- */
+
+.plans-section h2 {
+    margin-top: 0;
+}
+
+.plans-section p {
+    color: var(--color-text-light); /* Medium gray for plan description */
+}
+
+.plans-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+    align-items: stretch;
+}
+
+.plan-card {
+    background-color: var(--color-background-light); /* White background for plan cards */
+    padding: 30px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* Lighter shadow for light theme */
+    text-align: center;
+    transition: transform 0.3s, border-color 0.3s;
+    border: 2px solid var(--color-border); /* Light border */
+}
+
+.plan-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--color-primary); /* Red border on hover */
+}
+
+/* Accent Color for Featured Plan */
+.plan-card.featured {
+    border: 2px solid var(--color-accent); /* Gold accent */
+    box-shadow: 0 10px 20px rgba(245, 158, 11, 0.2);
+    background-color: #fffbeb; /* Very light gold/cream for featured card */
+}
+
+.plan-card h2 {
+    font-size: 1.8rem;
+    color: var(--color-primary); /* Red heading */
+    margin-bottom: 10px;
+}
+
+.plan-card .investment-amount {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-primary); /* Red amount */
+    margin-bottom: 15px;
+}
+
+.plan-card.featured .investment-amount {
+    color: var(--color-accent); /* Gold color for the featured plan price */
+}
+
+.plan-card .return-period {
+    background-color: var(--color-secondary); /* Lighter red background for period */
+    color: white;
+    display: inline-block;
+    padding: 5px 15px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.plan-card ul {
+    list-style: none;
+    text-align: left;
+    margin-bottom: 30px;
+}
+
+.plan-card ul li {
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--color-border);
+    color: var(--color-text-dark); /* Dark text on light background */
+    display: flex;
+    align-items: center;
+}
+
+.plan-card ul li i {
+    color: var(--color-success); /* Green checkmark (can be changed if desired) */
+    margin-right: 10px;
+}
+
+.plan-card .cta-button {
+    width: 100%;
+    padding: 15px 0;
+    font-size: 1rem;
+}
+
+/* Button accent for the featured plan */
+.plan-card.featured .cta-button {
+    background-color: var(--color-accent);
+}
+
+.plan-card.featured .cta-button:hover {
+    background-color: #d97706;
+}
+
+/* --- Contact and Map --- */
+.contact-section {
+    text-align: center;
+}
+
+.contact-details {
+    margin-bottom: 30px;
+    color: var(--color-text-light); /* Medium gray for contact details */
+}
+
+.contact-details p {
+    margin: 5px 0;
+}
+
+.map-placeholder {
+    width: 100%;
+    max-width: 1000px;
+    height: 400px;
+    background-color: var(--color-border); /* Light gray for map placeholder */
+    border: 1px solid var(--color-border);
+    margin: 20px auto 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--color-text-light); /* Medium gray text */
+    font-size: 1.2rem;
+}
+
+/* --- Footer --- */
+footer {
+    padding: 1.5rem 5%;
+    text-align: center;
+    font-size: 0.9rem;
+    background-color: var(--color-background-light); /* White footer */
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text-light); /* Medium gray text */
+}
+
+footer a {
+    color: var(--color-primary); /* Red links in footer */
+}
+
+
+/* --- DASHBOARD SPECIFIC STYLES (Adjusted for red/white theme) --- */
+.login-body { /* Used for login and forgot password pages */
+    background-color: var(--color-background-dark);
+}
+.auth-container {
+    background-color: var(--color-background-light); /* White container */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+.auth-container h2 {
+    color: var(--color-primary); /* Red heading */
+}
+.auth-form input {
+    border: 1px solid var(--color-border);
+    background-color: var(--color-background-dark); /* Light background for input */
+    color: var(--color-text-dark); /* Dark text for input */
+}
+.auth-form input:focus {
+    border-color: var(--color-primary); /* Red focus border */
+}
+.auth-form button {
+    background-color: var(--color-primary);
+}
+.auth-form button:hover {
+    background-color: var(--color-secondary);
+}
+.form-toggle a {
+    color: var(--color-text-light);
+}
+.toggle-button {
+    border: 1px solid var(--color-border);
+    color: var(--color-text-dark);
+}
+.toggle-button:hover {
+    background-color: var(--color-border);
+}
+
+
+.dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 250px;
+    background-color: var(--color-background-light); /* White sidebar */
+    color: var(--color-text-dark); /* Dark text */
+    padding: 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    border-right: 1px solid var(--color-border);
+    flex-shrink: 0;
+}
+
+.sidebar .logo {
+    margin-bottom: 30px;
+    color: var(--color-primary); /* Red logo in sidebar */
+}
+
+.sidebar nav a {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    color: var(--color-text-light); /* Medium gray nav links */
+    border-radius: 6px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.sidebar nav a i {
+    margin-right: 10px;
+    font-size: 1.1rem;
+}
+
+.sidebar nav a:hover, .sidebar nav a.active {
+    background-color: var(--color-primary); /* Red active/hover */
+    color: white;
+}
+
+.main-content {
+    flex-grow: 1;
+    padding: 40px;
+    background-color: var(--color-background-dark); /* Light background for main content */
+}
+
+.top-bar {
+    border-bottom: 1px solid var(--color-border);
+}
+
+./* Ensure the Dashboard Welcome Text is RED */
+.welcome-message h1 {
+    color: var(--color-primary) !important; /* Forces the primary RED color */
+    font-weight: 600;
+}
+.user-profile span {
+    color: var(--color-text-light);
+}
+
+.user-profile .avatar {
+    background-color: var(--color-primary); /* Red avatar */
+    color: white;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.stat-card {
+    background-color: var(--color-background-light); /* White stat cards */
+    padding: 25px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-left: 5px solid var(--color-primary); /* Red border accent */
+}
+
+.stat-card.growth { border-left-color: var(--color-success); } /* Green for growth remains */
+.stat-card.deposit { border-left-color: var(--color-accent); } /* Gold for deposit */
+
+.stat-card p {
+    font-size: 0.9rem;
+    color: var(--color-text-light);
+    margin-bottom: 5px;
+}
+
+.stat-card h3 {
+    font-size: 2rem;
+    color: var(--color-text-dark); /* Dark text */
+    font-weight: 700;
+}
+
+.stat-card .change {
+    font-size: 1rem;
+    color: var(--color-success); /* Green for positive change */
+    margin-top: 5px;
+}
+
+/* Dashboard Performance Chart Area (adapted for light theme) */
+.performance-chart-area {
+    background-color: var(--color-background-light);
+    padding: 30px;
+    border-radius: 8px;
+    margin-bottom: 40px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+.performance-chart-area h2 {
+    color: var(--color-primary); /* Red heading */
+    border-bottom: 1px solid var(--color-border);
+}
+.chart-placeholder {
+    /* Set a realistic size for a chart */
+    height: 400px;
+    background-color: #f1f3f6; /* Light background for TradingView container */
+    border-radius: 4px;
+    /* Removed: display: flex, align-items, justify-content, color, font-weight */
+    overflow: hidden; /* Ensures the widget stays within bounds */
+}
+
+/* Investment Status Card (adapted for light theme) */
+.investment-status-card {
+    background-color: var(--color-background-light);
+    padding: 25px;
+    border-radius: 8px;
+    margin-bottom: 40px;
+    border: 1px solid var(--color-primary); /* Red border */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+.investment-status-card h2 {
+    color: var(--color-primary); /* Red heading */
+}
+.investment-status-card p {
+    color: var(--color-text-light);
+}
+.investment-status-card strong {
+    color: var(--color-text-dark);
+}
+.investment-status-card strong.growth {
+    color: var(--color-success);
+}
+.progress-bar-container {
+    background-color: var(--color-border);
+}
+.progress-bar {
+    background-color: var(--color-success);
+}
+
+
+/* Recent Activity (adapted for light theme) */
+.recent-activity {
+    background-color: var(--color-background-light);
+    padding: 30px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.recent-activity h2 {
+    font-size: 1.5rem;
+    color: var(--color-primary); /* Red heading */
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 10px;
+}
+
+.transaction-item {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text-dark); /* Dark text */
+}
+
+.transaction-item .type {
+    font-weight: 600;
+    color: var(--color-primary); /* Red type */
+}
+
+.transaction-item .amount.deposit {
+    color: var(--color-success);
+}
+.transaction-item .amount.withdraw {
+    color: var(--color-primary); /* Red for withdrawals */
+}
+
+/* ------------------------------------------- */
+/* --- UPDATED RESPONSIVE FRONT-END STYLES --- */
+/* ------------------------------------------- */
+
+/* --- OUR VISION & TEAM SECTION STYLES (Updated for consistent alignment) --- */
+
+.team-section {
+    background-color: var(--color-background-dark); /* Using the lighter background for contrast */
+}
+
+.team-grid {
+    display: grid;
+    /* 3 columns on large screens */
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 40px;
+    max-width: 1300px;
+    margin: 50px auto 0;
+    text-align: left;
+    align-items: stretch; /* IMPORTANT: Makes cards stretch to the height of the tallest one */
+}
+
+.team-card {
+    display: flex; /* Makes the card content manageable */
+    flex-direction: column; /* Stacks image, title, and paragraph vertically */
+    height: 100%; /* Ensures the card honors the stretch from the grid */
+    background-color: var(--color-background-light); 
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    overflow: hidden; 
+    transition: transform 0.3s;
+}
+
+.team-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(220, 38, 38, 0.15); /* Subtle red shadow on hover */
+}
+
+.team-card img {
+    width: 100%;
+    /* Set a consistent height for ALL images for uniform alignment */
+    height: 220px; 
+    /* This ensures images fill the 220px height without stretching the subject */
+    object-fit: cover; 
+    border-bottom: 3px solid var(--color-primary); 
+}
+
+.team-card h3 {
+    color: var(--color-primary); 
+    font-size: 1.4rem;
+    margin: 15px 20px 5px;
+}
+
+.team-card p {
+    color: var(--color-text-light);
+    font-size: 0.95rem;
+    padding: 0 20px 20px;
+    margin: 0;
+    flex-grow: 1; /* Pushes content down/fills remaining space for equal card heights */
+}
+
+
+/* --- LUXURY CAR SECTION STYLES (New for consistent alignment) --- */
+
+.car-section {
+    background-color: var(--color-background-light); 
+}
+
+.car-grid {
+    display: grid;
+    /* Display 3 columns on large screens for consistency */
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    max-width: 1300px;
+    margin: 50px auto 0;
+    text-align: left;
+    align-items: stretch; /* Makes all car cards the same height */
+}
+
+.car-card {
+    background-color: var(--color-background-dark); /* Using off-white for car cards for visual break */
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    overflow: hidden; 
+    transition: transform 0.3s;
+}
+
+.car-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(220, 38, 38, 0.15);
+}
+
+.car-card img {
+    width: 100%;
+    /* Set a consistent height for ALL car images */
+    height: 200px; 
+    object-fit: cover;
+    border-bottom: 3px solid var(--color-primary);
+}
+
+.car-card .car-info {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.car-card h3 {
+    color: var(--color-text-dark); 
+    font-size: 1.4rem;
+    margin: 15px 20px 5px;
+}
+
+.car-card .car-description {
+    color: var(--color-text-light);
+    font-size: 0.95rem;
+    padding: 0 20px 10px;
+    margin: 0;
+    flex-grow: 1; /* Pushes the price and button to the bottom */
+}
+
+.car-card .car-price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    padding: 0 20px 15px;
+}
+
+.car-card .cta-button {
+    margin: 0 20px 20px;
+    width: auto; 
+}
+
+
+/* --- MOBILE RESPONSIVENESS (Media Queries) --- */
+
+/* Hamburger Menu for Mobile Nav */
+.hamburger {
+    display: none; /* Hidden on desktop */
+    cursor: pointer;
+    z-index: 1001;
+}
+
+.hamburger .bar {
+    width: 25px;
+    height: 3px;
+    margin: 5px 0;
+    background-color: var(--color-text-dark);
+    transition: all 0.3s ease;
+}
+
+@media (max-width: 992px) {
+    /* Navigation Bar Mobile Setup */
+    .nav-links {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 60%;
+        height: 100vh;
+        background-color: var(--color-background-light);
+        flex-direction: column;
+        justify-content: flex-start;
+        padding-top: 100px;
+        transition: right 0.5s ease;
+        box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-links.active {
+        right: 0;
+    }
+
+    .navbar nav a {
+        margin: 20px 0;
+        padding: 10px 30px;
+        width: 100%;
+        text-align: left;
+        border-bottom: 1px solid var(--color-border);
+    }
+    
+    .navbar nav a:last-child {
+        border-bottom: none;
+    }
+
+    .hamburger {
+        display: block;
+    }
+
+    .hamburger.active .bar:nth-child(2) {
+        opacity: 0;
+    }
+
+    .hamburger.active .bar:nth-child(1) {
+        transform: translateY(8px) rotate(45deg);
+    }
+
+    .hamburger.active .bar:nth-child(3) {
+        transform: translateY(-8px) rotate(-45deg);
+    }
+
+    /* Hero Section Mobile Adjustments */
+    .hero-section h1 {
+        font-size: 2.2rem;
+    }
+    .hero-section p {
+        font-size: 1rem;
+    }
+    
+    /* Content Section Adjustments */
+    .content-section {
+        padding: 3rem 5%;
+    }
+
+    /* Team and Car Grid Tablet View (2 columns) */
+    .team-grid,
+    .car-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px;
+    }
+
+    /* Investment Plans Grid Tablet View */
+    .plans-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    /* Team, Car, and Investment Plans Grid Mobile View (1 column) */
+    .team-grid,
+    .car-grid,
+    .plans-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .navbar {
+        padding: 1rem 5%;
+    }
+
+    .hero-section h1 {
+        font-size: 1.8rem;
+    }
+}

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeslaAi | Withdraw Funds</title>
+    <link rel="stylesheet" href="style.css"> 
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* Define variables (assuming they are in style.css, but adding them here for completeness) */
+        :root {
+            --color-primary: #ef4444; /* Strong Red */
+            --color-secondary: #fcd34d; /* Yellow/Gold accent */
+            --color-accent: #3b82f6; /* Blue accent */
+            --color-text-light: #9ca3af;
+            --color-background-dark: #111827; 
+            --color-background-light: #2c3541; 
+            --color-background-darker: #0d131f; /* Added for contrast */
+            --color-border: #4b5563;
+        }
+
+        /* General Layout & Mobile Fit */
+        .dashboard-body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--color-background-dark);
+            color: white;
+            margin: 0;
+        }
+        .dashboard-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            /* Mobile Fit: Hide sidebar on small screens */
+            display: none; 
+            background-color: var(--color-background-light);
+            padding: 2rem 1.5rem;
+            width: 250px;
+            flex-shrink: 0;
+        }
+        @media (min-width: 768px) {
+            .sidebar {
+                /* Show sidebar on tablets/desktops */
+                display: flex; 
+                flex-direction: column;
+            }
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 1rem; /* Smaller padding for mobile */
+            background-color: var(--color-background-dark); 
+        }
+        @media (min-width: 768px) {
+            .main-content {
+                padding: 2rem;
+            }
+        }
+
+        /* Utility Class for Sequential Flow */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Form/Card Styling */
+        .content-panel {
+            background-color: var(--color-background-light); 
+            border: 1px solid var(--color-border); 
+            border-radius: 0.75rem; 
+            padding: 1rem; 
+        }
+        .process-status-card {
+            background-color: var(--color-background-dark);
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid var(--color-border);
+        }
+        .process-status-card i {
+            font-size: 3rem;
+            color: var(--color-accent);
+            margin-bottom: 20px;
+        }
+        .process-status-card h2 {
+            color: var(--color-primary);
+            margin-bottom: 15px;
+        }
+        .process-status-card p {
+            color: var(--color-text-light);
+        }
+        .cta-button {
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-align: center;
+            text-decoration: none;
+        }
+        /* Assuming form-group, input, select are styled in style.css */
+        /* Temporary styling for inputs to be visible */
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: white; }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--color-border);
+            background-color: var(--color-background-dark);
+            color: white;
+        }
+        .investment-status-card {
+             padding: 15px;
+             border-radius: 8px;
+             background-color: var(--color-background-dark);
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+
+    <div class="dashboard-layout">
+        
+        <div class="sidebar">
+            <div class="logo">TeslaAi</div>
+            <nav>
+                <a href="dashboard.html" style="color: var(--color-primary);"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+            </nav>
+            <div class="sidebar-footer">
+                <p style="font-size: 0.8rem; color: var(--color-text-light);">Client ID: <span style="font-weight: 600; color: var(--color-primary);">TAI-001934</span></p>
+                <a href="login.html" style="color: var(--color-primary); font-size: 0.9rem; margin-top: 10px; display: block;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="top-bar" style="border-bottom: 1px solid var(--color-border); padding-bottom: 10px; margin-bottom: 20px;">
+                <h1>Withdraw Funds</h1>
+            </div>
+
+            <div class="content-panel" style="max-width: 600px; margin: 0 auto;">
+                
+                <div id="withdraw-form-interface" class="interface-step">
+                    <h2>💸 Initiate Withdrawal Request</h2>
+                    <div class="investment-status-card" style="border-left: 5px solid var(--color-primary); margin-bottom: 30px;">
+                        <p style="color: white; font-weight: 500;">Available for Withdrawal</p>
+                        <h1 style="font-size: 2.5rem; color: var(--color-primary);">$200.00</h1>
+                        <p style="margin-top: 10px; font-size: 0.9rem;">(Minimum withdrawal: $100. Processing fee: 3%)</p>
+                    </div>
+
+                    <form class="withdraw-form" id="withdraw-form" style="margin-top: 30px;">
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label for="w-amount">Withdrawal Amount (USD)</label>
+                            <input type="number" id="w-amount" placeholder="$100 minimum" min="100" required>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label for="w-network">Withdrawal Network</label>
+                            <select id="w-network" required>
+                                <option value="">-- Choose a Network --</option>
+                                <option value="USDT TRC20">USDT (TRC20)</option>
+                                <option value="Bitcoin BTC">Bitcoin (BTC)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 30px;">
+                            <label for="w-address">Wallet Address (Recieving Address)</label>
+                            <input type="text" id="w-address" placeholder="Enter your valid crypto address" required>
+                        </div>
+
+                        <button type="submit" class="cta-button large" style="width: 100%; background-color: var(--color-accent);">Submit Withdrawal Request</button>
+                    </form>
+                </div>
+
+                <div id="withdrawal-confirmation" class="hidden process-status-card">
+                    <i class="fas fa-clock"></i>
+                    <h2>Withdrawal In Process</h2>
+                    <p>Your withdrawal request for $<span id="conf-amount"></span> via <span id="conf-network"></span> has been successfully submitted and is under review.</p>
+                    
+                    <div style="margin-top: 25px; padding: 15px; background-color: var(--color-background-darker); border-radius: 8px;">
+                        <p style="font-weight: 600; color: var(--color-primary);">Processing Time:</p>
+                        <p style="font-size: 1.1rem; margin-top: 5px;">It typically takes up to 24 hours for the transaction to be fully processed and funds to be sent.</p>
+                    </div>
+
+                    <p style="margin-top: 20px; font-size: 0.8rem; color: #94a3b8;">You will receive an email notification upon completion. Check your History for status updates.</p>
+
+                    <a href="dashboard.html" class="cta-button" style="margin-top: 30px; background-color: var(--color-secondary);">Return to Dashboard</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('withdraw-form').addEventListener('submit', function(e) {
+            e.preventDefault(); // Stop default form submission
+
+            // --- 1. Get form values ---
+            const amount = document.getElementById('w-amount').value;
+            const networkSelect = document.getElementById('w-network');
+            const network = networkSelect.options[networkSelect.selectedIndex].value;
+            // The address is implicitly collected by the form, but not displayed on the success screen
+
+            // Basic Validation (Optional, but recommended)
+            if (parseFloat(amount) < 100) {
+                alert('Withdrawal amount must be at least $100.');
+                return;
+            }
+            if (!network) {
+                 alert('Please select a withdrawal network.');
+                return;
+            }
+
+            // --- 2. Update confirmation details ---
+            document.getElementById('conf-amount').innerText = parseFloat(amount).toFixed(2);
+            document.getElementById('conf-network').innerText = network;
+            
+            // --- 3. Switch interface (Sequential Flow) ---
+            document.getElementById('withdraw-form-interface').classList.add('hidden');
+            document.getElementById('withdrawal-confirmation').classList.remove('hidden');
+            
+            // In a real application, you would make an AJAX/Fetch call here to send the data to the server.
+        });
+    </script>
+</body>
+</html>

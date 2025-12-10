@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TESLAAI | SECURE Admin Terminal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --color-primary: #ef4444; 
+            --color-background-dark: #111827;
+            --color-background-light: #1f2937;
+            --color-border: #374151;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-background-dark);
+            color: white;
+            /* Hide body content until login is complete */
+            visibility: hidden; 
+        }
+
+        /* --- Login Overlay Styles --- */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--color-background-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .login-container {
+            background-color: #1f2937; 
+            padding: 3rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid #374151;
+        }
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            margin-top: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid #4b5563;
+            background-color: #374151;
+            color: white;
+        }
+        .login-button {
+            width: 100%;
+            background-color: var(--color-primary); 
+            color: white;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+        }
+        .error-message {
+            color: #f87171;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-weight: 500;
+            height: 1.5rem;
+        }
+        /* --- END Login Overlay Styles --- */
+        
+        /* --- Dashboard Styles --- */
+        .header {
+            background-color: var(--color-background-light);
+            border-bottom: 1px solid var(--color-border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+        .logout-button {
+            background-color: var(--color-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+        }
+        .content-area {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .client-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 1rem;
+        }
+        .client-table th {
+            text-align: left;
+            padding: 0.75rem 1rem;
+            font-size: 0.8rem;
+            color: #9ca3af;
+            background-color: #1f2937;
+            border-bottom: 2px solid var(--color-border);
+        }
+        .client-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #2d3748;
+            background-color: #2c3541;
+            cursor: pointer;
+        }
+        .client-table tbody tr.selected-row td {
+            background-color: #4a0404 !important; 
+            border-left: 4px solid var(--color-primary);
+        }
+        .update-form {
+            background: var(--color-background-light);
+            padding: 20px;
+            border-radius: 6px;
+            margin-top: 20px;
+            border: 1px solid var(--color-border);
+        }
+        .update-form input[type="number"], .update-form input[type="text"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #4b5563;
+            border-radius: 4px;
+            background-color: #374151;
+            color: white;
+        }
+        .update-form button[type="submit"] {
+            background-color: #10b981; 
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            color: white; /* Ensure text is white */
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay" class="login-overlay">
+        <div class="login-container">
+            <div class="logo mb-4">TESLAAI ADMIN</div>
+            <h2 class="text-white text-xl font-semibold mb-4 text-center">System Access Required</h2>
+            
+            <p id="auth-error-message" class="error-message"></p>
+
+            <form id="admin-login-form">
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-300">Username</label>
+                    <input type="text" id="username" name="username" class="form-input" required>
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-300">Password</label>
+                    <input type="password" id="password" name="password" class="form-input" required>
+                </div>
+                <button type="submit" class="login-button">
+                    <i class="fas fa-lock mr-2"></i> Secure Login
+                </button>
+            </form>
+        </div>
+    </div>
+    <div id="dashboard-content">
+        <div class="header">
+            <div class="logo">TESLAAI SECURE ADMIN PANEL</div>
+            <button id="logout-button" class="logout-button">
+                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+            </button>
+        </div>
+
+        <div class="content-area">
+            <h1 class="text-3xl font-bold mb-6 text-white border-l-4 border-red-500 pl-3">Client Financial Management</h1>
+            
+            <div class="client-management-panel">
+                <div id="clients-table-container">
+                    <h2 class="text-xl font-semibold mb-3 text-gray-200">Client Accounts Overview</h2>
+                    <table id="clients-table" class="client-table">
+                        <thead>
+                            <tr>
+                                <th data-sort="clientID">Client ID</th>
+                                <th data-sort="email">Email</th>
+                                <th data-sort="balance">Total Balance</th>
+                                <th data-sort="profit">Total Profit</th>
+                                <th data-sort="investment">Active Investment</th>
+                                <th>Next Payout</th> 
+                            </tr>
+                        </thead>
+                        <tbody id="clients-table-body">
+                            <tr><td colspan="6" class="text-center text-gray-400">Fetching live client data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="client-update-area" class="update-form" style="display: none;">
+                    <h2 class="text-xl font-semibold mb-4">Update Client Financials: <span id="selected-client-id" class="text-red-500"></span></h2>
+                    <form id="update-client-form">
+                        <input type="hidden" id="update-clientID">
+                        
+                        <label for="new-balance">Total Balance ($):</label>
+                        <input type="number" step="0.01" id="new-balance" placeholder="Enter new balance" required>
+
+                        <label for="new-profit">Total Profit ($):</label>
+                        <input type="number" step="0.01" id="new-profit" placeholder="Enter new profit" required>
+                        
+                        <label for="new-investment">Active Investment ($):</label>
+                        <input type="number" step="0.01" id="new-investment" placeholder="Enter new investment" required>
+
+                        <label for="new-payout">Next Payout (Date/Status):</label>
+                        <input type="text" id="new-payout" placeholder="e.g., 2026-01-01 or Pending" required>
+
+                        <button type="submit" class="mt-4">
+                            <i class="fas fa-save mr-2"></i> Save All Changes
+                        </button>
+                        <p id="update-status"></p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // --- CONFIGURATION ---
+        // This MUST match your server host and port
+        const API_BASE_URL = 'http://localhost:3000/api'; // CRITICAL FIX 1: Corrected API URL to match Express setup
+
+        const clientTableBody = document.getElementById('clients-table-body');
+        const updateArea = document.getElementById('client-update-area');
+        const updateForm = document.getElementById('update-client-form');
+        const updateStatus = document.getElementById('update-status');
+        const selectedClientDisplay = document.getElementById('selected-client-id');
+        const loginOverlay = document.getElementById('login-overlay');
+        const adminLoginForm = document.getElementById('admin-login-form');
+        const authErrorMessage = document.getElementById('auth-error-message');
+        let clientsData = []; 
+
+        // --- 1. Security & Authentication ---
+        // Changed to rely on the token received from the server login
+        const AUTH_KEY = 'isAdminAuthenticated';
+
+        function checkAuth() {
+            // Check for the token AND the session flag
+            if (localStorage.getItem('adminToken') && sessionStorage.getItem(AUTH_KEY) === 'true') {
+                showDashboard();
+            } else {
+                loginOverlay.style.display = 'flex';
+                document.body.style.visibility = 'visible'; // Show the overlay only
+            }
+        }
+
+        function showDashboard() {
+            loginOverlay.style.display = 'none';
+            document.body.style.visibility = 'visible'; // Show the entire body
+            fetchClients(); // Load data from API
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('adminToken'); // Remove the token
+            sessionStorage.removeItem(AUTH_KEY); // Remove the session flag
+            window.location.reload(); 
+        }
+
+        adminLoginForm.addEventListener('submit', async function(e) { // Added 'async'
+            e.preventDefault();
+
+            const usernameInput = document.getElementById('username').value;
+            const passwordInput = document.getElementById('password').value;
+            authErrorMessage.textContent = ''; 
+
+            try {
+                // CRITICAL FIX 2: Calls the server API for authentication
+                const response = await fetch(`${API_BASE_URL}/admin/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: usernameInput,
+                        password: passwordInput
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Store the token and update the login status
+                    localStorage.setItem('adminToken', data.token); // Store token in localStorage
+                    sessionStorage.setItem(AUTH_KEY, 'true');
+                    showDashboard();
+                } else {
+                    authErrorMessage.textContent = data.message || 'Login failed. Invalid credentials.';
+                }
+
+            } catch (error) {
+                console.error('Login network error:', error);
+                authErrorMessage.textContent = 'Connection Error: Could not reach the server (Is the server.js running?).';
+            }
+        });
+
+        // --- 2. Client Management Logic (API Integration) ---
+        
+        async function fetchClients() {
+            clientTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-400">Fetching live client data...</td></tr>';
+            
+            try {
+                const adminToken = localStorage.getItem('adminToken');
+
+                if (!adminToken) {
+                    handleLogout(); // Force logout if token is missing
+                    return;
+                }
+                
+                // CRITICAL FIX 3: Actual fetch logic for clients with authentication
+                const response = await fetch(`${API_BASE_URL}/admin/clients`, { 
+                    headers: { 
+                        'Authorization': `Bearer ${adminToken}` 
+                    } 
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401 || response.status === 403) {
+                        handleLogout(); // Force logout if token is invalid/expired
+                    }
+                    throw new Error(`Failed to fetch client data: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                clientsData = data;
+                renderClientTable(clientsData);
+
+                if (clientsData.length === 0) {
+                    clientTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-red-400">No client data found in the database.</td></tr>';
+                }
+
+            } catch (error) {
+                console.error('Error fetching clients:', error);
+                clientTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-red-500">Failed to connect: ${error.message}</td></tr>`;
+            }
+        }
+
+        function formatCurrency(value) {
+            if (value === undefined || value === null) return 'N/A';
+            return `$${parseFloat(value).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+        }
+
+        function renderClientTable(clients) {
+            clientTableBody.innerHTML = '';
+            clients.forEach(client => {
+                const row = clientTableBody.insertRow();
+                row.dataset.clientID = client.clientID;
+                row.addEventListener('click', () => selectClient(client));
+
+                row.insertCell().textContent = client.clientID;
+                row.insertCell().textContent = client.email;
+                row.insertCell().textContent = formatCurrency(client.balance);
+                row.insertCell().textContent = formatCurrency(client.profit);
+                row.insertCell().textContent = formatCurrency(client.investment);
+                row.insertCell().textContent = client.nextPayout; 
+            });
+        }
+
+        function selectClient(client) {
+            document.querySelectorAll('#clients-table tbody tr').forEach(row => {
+                row.classList.remove('selected-row');
+            });
+
+            const selectedRow = document.querySelector(`[data-client-id="${client.clientID}"]`);
+            if (selectedRow) selectedRow.classList.add('selected-row');
+
+            document.getElementById('update-clientID').value = client.clientID;
+            selectedClientDisplay.textContent = client.clientID;
+            document.getElementById('new-balance').value = client.balance;
+            document.getElementById('new-profit').value = client.profit;
+            document.getElementById('new-investment').value = client.investment;
+            document.getElementById('new-payout').value = client.nextPayout; 
+            
+            updateArea.style.display = 'block';
+            updateStatus.textContent = '';
+            updateStatus.style.backgroundColor = 'transparent'; 
+            updateStatus.style.color = 'white'; 
+        }
+
+        updateForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            updateStatus.textContent = '';
+            updateStatus.style.backgroundColor = 'transparent';
+            updateStatus.style.color = 'white';
+            
+            const clientID = document.getElementById('update-clientID').value;
+            const balance = parseFloat(document.getElementById('new-balance').value);
+            const profit = parseFloat(document.getElementById('new-profit').value);
+            const investment = parseFloat(document.getElementById('new-investment').value);
+            const nextPayout = document.getElementById('new-payout').value.trim();
+
+            if (isNaN(balance) || isNaN(investment) || isNaN(profit) || !nextPayout) {
+                updateStatus.textContent = 'ERROR: Please enter valid numbers and a payout status/date.';
+                updateStatus.style.backgroundColor = '#4a0404'; 
+                updateStatus.style.color = '#f87171'; 
+                return;
+            }
+
+            updateStatus.textContent = `Processing update for ${clientID}...`;
+
+            const updatedData = { 
+                balance: balance, 
+                profit: profit, 
+                investment: investment, 
+                nextPayout: nextPayout 
+            };
+
+            // --- ACTUAL API CALL: UPDATE CLIENT DATA ---
+            try {
+                const adminToken = localStorage.getItem('adminToken');
+                if (!adminToken) {
+                    throw new Error('Admin token not found. Cannot update.');
+                }
+
+                // CRITICAL FIX 4: Actual PUT request to update client data
+                const response = await fetch(`${API_BASE_URL}/admin/client/${clientID}`, { 
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: JSON.stringify(updatedData)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || 'Server update failed.');
+                }
+                
+                updateStatus.textContent = `SUCCESS: Client ${clientID} updated.`;
+                updateStatus.style.backgroundColor = '#155724'; 
+                updateStatus.style.color = '#c3e6cb'; 
+                
+                // After successful update, re-fetch clients to update the table with live data
+                fetchClients(); 
+
+            } catch (error) {
+                updateStatus.textContent = `CRITICAL ERROR: Update failed. ${error.message}. Check Network/API URL.`;
+                updateStatus.style.backgroundColor = '#4a0404';
+                updateStatus.style.color = '#f87171';
+                console.error('Update error:', error);
+            }
+        });
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('logout-button').addEventListener('click', handleLogout);
+            checkAuth(); 
+        });
+    </script>
+</body>
+</html>

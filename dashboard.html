@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TESLAAI | Client Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="/socket.io/socket.io.js"></script> 
+    <style>
+        :root {
+            --color-primary: #ef4444; 
+            --color-accent: #3b82f6; 
+            --color-secondary: #fcd34d; 
+            --color-text-dark: #1f2937;
+            --color-text-light: #9ca3af;
+            --color-background-dark: #1f2937; 
+            --color-background-light: #2c3541; 
+            --color-success: #10b981; 
+            --color-error: #ef4444;
+            --color-border: #4b5563;
+            --border-radius: 0.75rem; 
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-background-dark);
+            color: white;
+            margin: 0;
+        }
+        
+        /* Dashboard Layout */
+        .dashboard-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: var(--color-background-light);
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--color-border);
+            transition: transform 0.3s ease-in-out;
+            flex-shrink: 0; 
+        }
+        
+        .sidebar .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-primary);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .sidebar nav a {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: var(--border-radius);
+            color: #d1d5db;
+            transition: background-color 0.2s, color 0.2s;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .sidebar nav a i {
+            margin-right: 1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar nav a:hover,
+        .sidebar nav a.active {
+            background-color: #374151;
+            color: white;
+        }
+        
+        .main-content {
+            flex-grow: 1;
+            padding: 0; 
+            overflow-y: auto;
+        }
+        
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background-color: #2c3541;
+            border-bottom: 1px solid var(--color-border);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .welcome-message h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .welcome-message span {
+            color: var(--color-primary);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 9999px;
+            background-color: var(--color-primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            margin-left: 1rem;
+        }
+        
+        /* General Page Styling */
+        .page-content {
+            padding: 2rem;
+            animation: fadeIn 0.5s;
+        }
+        
+        .hidden {
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+.page-content h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: white;
+            border-left: 4px solid var(--color-primary);
+            padding-left: 1rem;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background-color: var(--color-background-light);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: 1px solid var(--color-border);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .stat-card p {
+            font-size: 0.9rem;
+            color: var(--color-text-light);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        .stat-card .change {
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.5rem;
+            margin-top: 0.5rem;
+            display: inline-block;
+        }
+
+        .stat-card .growth {
+            color: var(--color-success);
+            background-color: rgba(16, 185, 129, 0.1);
+        }
+        
+        .stat-card .deposit {
+            color: var(--color-accent);
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+
+        /* --- Dashboard Specific Grid (Chart & Activity) --- */
+        .dashboard-main-grid {
+            display: grid;
+            grid-template-columns: 1fr; 
+            gap: 2rem;
+        }
+        
+        /* Recent Activity & Content Panel */
+        .content-panel {
+            background-color: var(--color-background-light);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            border: 1px solid var(--color-border);
+        }
+        
+        /* TradingView Chart */
+        .performance-chart-area {
+            height: 400px; 
+            margin-bottom: 0;
+        }
+        
+        /* Link style for buttons */
+        .action-link {
+            text-decoration: none;
+            text-align: center;
+            display: block;
+        }
+
+        /* --- INVESTMENT STYLES (PLANS & CARS) --- */
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .plan-card {
+            background-color: #1f2937;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            border: 2px solid var(--color-border);
+            transition: border-color 0.3s, transform 0.3s;
+            text-align: center;
+        }
+
+        .plan-card:hover {
+            border-color: var(--color-accent);
+            transform: translateY(-5px);
+        }
+
+        .plan-card.featured {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+        }
+
+        .plan-card h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            border-left: none; 
+            padding-left: 0;
+            color: var(--color-primary);
+        }
+        
+        .plan-card .investment-amount {
+            font-size: 2.25rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 0.25rem;
+        }
+
+        .plan-card .return-period {
+            font-size: 0.9rem;
+            color: var(--color-success);
+            margin-bottom: 1.5rem;
+        }
+        
+        .plan-card ul {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+.plan-card ul li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            color: #ccc;
+            font-size: 0.95rem;
+        }
+
+        .plan-card ul li i {
+            color: var(--color-success);
+            margin-right: 0.75rem;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background-color: var(--color-primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+
+        .cta-button:hover {
+            background-color: #dc2626; 
+        }
+
+        /* Car Shop Styles */
+        .car-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .car-card {
+            background-color: #1f2937;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--color-border);
+            overflow: hidden;
+            transition: box-shadow 0.3s, transform 0.3s;
+        }
+
+        .car-card:hover {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            transform: translateY(-5px);
+        }
+        
+        .car-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .car-info {
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .car-info h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--color-accent);
+        }
+        
+        .car-info .car-description {
+            font-size: 0.9rem;
+            color: var(--color-text-light);
+            margin-bottom: 1rem;
+            min-height: 40px; 
+        }
+        
+        .car-info .car-price {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--color-success);
+            margin-bottom: 1.5rem;
+        }
+
+        .add-to-cart-btn {
+            background-color: var(--color-accent);
+        }
+
+        .add-to-cart-btn:hover {
+            background-color: #2563eb; 
+        }
+        
+        /* Mobile Responsiveness */
+        .menu-toggle {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: white;
+        }
+        
+        .user-info-mobile {
+            display: flex;
+            align-items: center;
+        }
+        
+        .client-id-mobile {
+            font-size: 0.8rem;
+            color: var(--color-text-light);
+            margin-right: 1rem;
+            display: block; 
+        }
+        
+        @media (min-width: 901px) {
+            .dashboard-main-grid {
+                grid-template-columns: 2fr 1fr; 
+            }
+            .recent-activity {
+                margin-top: 0; 
+            }
+            .client-id-mobile {
+                display: none; 
+            }
+        }
+
+        @media (max-width: 900px) {
+            .sidebar {
+                position: fixed;
+                height: 100%;
+                z-index: 50;
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                width: 100%;
+            }
+            
+            .welcome-message {
+                display: none;
+            }
+            
+            .menu-toggle {
+                display: block;
+                margin-left: 1rem;
+            }
+
+.user-profile .avatar {
+                margin-left: 0.5rem;
+            }
+            
+            .plans-grid, .car-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .content-panel {
+                padding: 1rem;
+            }
+        }
+
+    </style>
+</head>
+<body class="dashboard-body">
+
+<div class="dashboard-layout">
+        
+        <div class="sidebar" id="sidebar">
+            <div class="logo">TESLAAI</div>
+            <nav>
+                <a href="#home" class="active" data-page="home"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="#wallet" data-page="wallet"><i class="fas fa-wallet"></i> Wallet Balance</a>
+                <a href="#new-investment" data-page="new-investment"><i class="fas fa-chart-line"></i> New Investment</a>
+                <a href="#history" data-page="history"><i class="fas fa-clock-rotate-left"></i> History</a>
+                <a href="#cart" data-page="cart"><i class="fas fa-shopping-cart"></i> Shopping Cart</a>
+                <a href="#profile" data-page="profile"><i class="fas fa-user-circle"></i> Profile</a>
+            </nav>
+            <div class="sidebar-footer" style="margin-top: auto; padding-top: 20px; border-top: 1px solid var(--color-border);">
+                <p style="font-size: 0.8rem; color: var(--color-text-light);">Client ID: <span id="client-id-sidebar" style="font-weight: 600; color: var(--color-primary);">Loading...</span></p>
+                <a href="#" id="logout-button" style="color: var(--color-primary); font-size: 0.9rem; margin-top: 10px; display: block;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+        <div class="main-content">
+            
+            <div class="top-bar">
+                <div class="welcome-message">
+                    <h1>Welcome Back, <span id="welcome-name">Investor</span>!</h1>
+                </div>
+                <div class="user-info-mobile">
+                    <span class="client-id-mobile" id="client-id-mobile">Loading...</span>
+                    <div class="user-profile">
+                        <span id="user-name" style="display: none;"></span> 
+                        <div class="avatar" id="user-avatar">?</div>
+                    </div>
+                    <div class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></div>
+                </div>
+            </div>
+            
+            <div id="home" class="page-content">
+                <h2>📈 Investment Overview</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <p>Total Balance</p>
+                        <h3 id="total-balance">$0.00</h3>
+                        <span class="change growth hidden" id="bonus-note">+<span id="bonus-amount">0.00</span> Sign-Up Bonus</span>
+                        <span class="change deposit" id="initial-balance-note">Check Wallet Page</span>
+                    </div>
+                    <div class="stat-card growth">
+                        <p>Total Profit</p>
+                        <h3 id="total-profit">$0.00</h3>
+                        <span class="change growth" id="profit-percentage">0.0% All Time</span>
+                    </div>
+                    <div class="stat-card deposit">
+                        <p>Active Investment</p>
+                        <h3 id="active-investment">$0.00</h3>
+                        <span class="change deposit" id="active-investment-status">No Active Plan</span>
+                    </div>
+                    <div class="stat-card">
+                        <p>Next Payout</p>
+                        <h3 id="next-payout">N/A</h3>
+                        <span class="change" id="next-payout-status">No Active Investment</span>
+                    </div>
+                </div>
+
+<div class="dashboard-main-grid">
+                    <div class="performance-chart-area">
+                        <h2>Portfolio Performance (NASDAQ:TSLA)</h2>
+                        <div class="chart-placeholder content-panel" style="height: 100%; padding: 20px;">
+                            <div class="tradingview-widget-container" style="height: 100%; width: 100%;">
+                                <div id="tradingview_12345" style="height: 100%; width: 100%;"></div>
+                                <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+                                <script type="text/javascript">
+                                new TradingView.widget(
+                                {
+                                "width": "100%",
+                                "height": "100%",
+                                "symbol": "NASDAQ:TSLA", 
+                                "interval": "D",
+                                "timezone": "Etc/UTC",
+                                "theme": "dark", 
+                                "style": "1",
+                                "locale": "en",
+                                "toolbar_bg": "#f1f3f6",
+                                "enable_publishing": false,
+                                "allow_symbol_change": true,
+                                "container_id": "tradingview_12345"
+                                }
+                                );
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="recent-activity">
+                        <h2>Recent Activity</h2>
+                        <div class="content-panel">
+                             <table class="min-w-full divide-y divide-gray-700">
+                                <thead>
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Date</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Type</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-800" id="recent-activity-table-body">
+                                     <tr>
+                                        <td colspan="3" class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500 italic">Loading recent activity...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+<div id="wallet" class="page-content hidden">
+                <h2>💳 Wallet Balance</h2>
+                <div class="content-panel">
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <div class="flex-1 p-6 border border-gray-600 rounded-lg bg-gray-800">
+                            <p class="text-gray-400">Current Available Balance</p>
+                            <h3 class="text-4xl font-bold text-red-500 mt-2">$<span id="wallet-balance-display">0.00</span></h3>
+                            <a href="deposit.html?mode=deposit" class="action-link mt-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">Deposit Funds</a>
+                        </div>
+                        <div class="flex-1 p-6 border border-gray-600 rounded-lg bg-gray-800">
+                            <p class="text-gray-400">Total Withdrawn</p>
+                            <h3 class="text-4xl font-bold text-gray-300 mt-2">$<span id="total-withdrawn">0.00</span></h3>
+                            <a href="withdraw.html" class="action-link inline-block mt-4 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200" style="text-decoration: none;">Request Withdrawal</a>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-semibold mt-8 mb-4 border-b border-gray-700 pb-2">Deposit History</h3>
+                    <p class="text-gray-400">Your recent deposit transactions will be listed here.</p>
+                </div>
+            </div>
+            
+            <div id="new-investment" class="page-content hidden">
+                <div class="content-panel">
+                    <section id="plans">
+                        <h2>💰 Our Investment Plans</h2>
+                        <p style="color: var(--color-text-light); margin-bottom: 50px;">Choose the plan that best fits your financial goals. All plans include daily AI management and profit distribution every 3 days.</p>
+                        
+                        <div class="plans-grid">
+                            
+                            <div class="plan-card" data-plan-name="Bronze_Tier" data-price="2000">
+                                <h2>Bronze Tier</h2>
+                                <div class="investment-amount">$2,000</div>
+                                <div class="return-period">Profit Payout: Every 3 Days</div>
+                                <ul>
+                                    <li><i class="fas fa-check-circle"></i> Minimum Capital: $2,000</li>
+                                    <li><i class="fas fa-check-circle"></i> AI Strategy: Low Volatility</li>
+                                    <li><i class="fas fa-check-circle"></i> Estimated Monthly Return: 5% - 8%</li>
+                                    <li><i class="fas fa-check-circle"></i> Basic Support</li>
+                                </ul>
+                                <a href="deposit.html?plan=Bronze" class="cta-button select-plan-btn">Select Plan</a> 
+                            </div>
+
+<div class="plan-card" data-plan-name="Silver_Tier" data-price="5000">
+                                <h2>Silver Tier</h2>
+                                <div class="investment-amount">$5,000</div>
+                                <div class="return-period">Profit Payout: Every 3 Days</div>
+                                <ul>
+                                    <li><i class="fas fa-check-circle"></i> Minimum Capital: $5,000</li>
+                                    <li><i class="fas fa-check-circle"></i> AI Strategy: Balanced Growth</li>
+                                    <li><i class="fas fa-check-circle"></i> Estimated Monthly Return: 8% - 12%</li>
+                                    <li><i class="fas fa-check-circle"></i> Dedicated Account Manager</li>
+                                </ul>
+                                <a href="deposit.html?plan=Silver" class="cta-button select-plan-btn">Select Plan</a>
+                            </div>
+
+<div class="plan-card featured" data-plan-name="Gold_Tier" data-price="10000">
+                                <h2>Gold Tier (Recommended)</h2>
+                                <div class="investment-amount">$10,000</div>
+                                <div class="return-period">Profit Payout: Every 3 Days</div>
+                                <ul>
+                                    <li><i class="fas fa-check-circle"></i> Minimum Capital: $10,000</li>
+                                    <li><i class="fas fa-check-circle"></i> AI Strategy: Optimized Aggression</li>
+                                    <li><i class="fas fa-check-circle"></i> Estimated Monthly Return: 12% - 18%</li>
+                                    <li><i class="fas fa-check-circle"></i> Priority Support & Analytics</li>
+                                </ul>
+                                <a href="deposit.html?plan=Gold" class="cta-button select-plan-btn">Select Plan</a>
+                            </div>
+
+                            <div class="plan-card" data-plan-name="Platinum_Tier" data-price="25000">
+                                <h2>Platinum Tier</h2>
+                                <div class="investment-amount">$25,000</div>
+                                <div class="return-period">Profit Payout: Every 3 Days</div>
+                                <ul>
+                                    <li><i class="fas fa-check-circle"></i> Minimum Capital: $25,000</li>
+                                    <li><i class="fas fa-check-circle"></i> AI Strategy: Exclusive Access</li>
+                                    <li><i class="fas fa-check-circle"></i> Estimated Monthly Return: 18% - 25%</li>
+                                    <li><i class="fas fa-check-circle"></i> Quarterly Strategy Review</li>
+                                </ul>
+                                <a href="deposit.html?plan=Platinum" class="cta-button select-plan-btn">Select Plan</a>
+                            </div>
+
+                            <div class="plan-card" data-plan-name="Diamond_Tier" data-price="50000">
+                                <h2>Diamond Tier</h2>
+                                <div class="investment-amount">$50,000</div>
+                                <div class="return-period">Profit Payout: Every 3 Days</div>
+                                <ul>
+                                    <li><i class="fas fa-check-circle"></i> Minimum Capital: $50,000</li>
+                                    <li><i class="fas fa-check-circle"></i> AI Strategy: Fully Bespoke</li>
+                                    <li><i class="fas fa-check-circle"></i> Estimated Monthly Return: 25% - 35%</li>
+                                    <li><i class="fas fa-check-circle"></i> Personal Senior Advisor</li>
+                                </ul>
+                                <a href="deposit.html?plan=Diamond" class="cta-button select-plan-btn">Select Plan</a>
+                            </div>
+
+<div class="plan-card" data-plan-name="Centurion_Tier" data-price="100000">
+                                <h2>Centurion Tier</h2>
+                                <div class="investment-amount">$100,000+</div>
+                                <div class="return-period">Profit Payout: Every 3 Days</div>
+                                <ul>
+                                    <li><i class="fas fa-check-circle"></i> Minimum Capital: $100,000</li>
+                                    <li><i class="fas fa-check-circle"></i> AI Strategy: Private Market Access</li>
+                                    <li><i class="fas fa-check-circle"></i> Estimated Monthly Return: 35%+</li>
+                                    <li><i class="fas fa-check-circle"></i> Direct Access to Portfolio Manager</li>
+                                </ul>
+                                <a href="deposit.html?plan=Centurion" class="cta-button select-plan-btn">Select Plan</a>
+                            </div>
+                            
+                        </div>
+                    </section>
+                </div>
+
+<div class="content-panel mt-8">
+                    <section id="luxury-cars">
+                        <h2>🚗 Exclusive Telsa Luxury Vehicles</h2>
+                        <p style="color: var(--color-text-light); margin-bottom: 50px;">Use your investment profits or fresh capital to purchase a Telsa vehicle with cryptocurrency through our exclusive partnership.</p>
+                        
+                        <div class="car-grid">
+
+                            <div class="car-card" data-car-name="Model S Plaid" data-price="109990" data-image="images/model_s.jpg">
+                                <img src="images/model_s.jpg" alt="Tesla Model S Plaid">
+                                <div class="car-info">
+                                    <h3>Tesla Model S Plaid</h3>
+                                    <p class="car-description">The ultimate combination of power, efficiency, and safety. 0-60mph in 1.99s, with Tri-Motor All-Wheel Drive.</p>
+                                    <p class="car-price">$109,990</p>
+                                    <a href="#" class="cta-button add-to-cart-btn">Add to Cart</a>
+                                </div>
+                            </div>
+
+                            <div class="car-card" data-car-name="Model X" data-price="98490" data-image="images/model_x.jpg">
+                                <img src="images/model_x.jpg" alt="Tesla Model X">
+                                <div class="car-info">
+                                    <h3>Tesla Model X</h3>
+                                    <p class="car-description">The safest SUV on the road. Falcon Wing doors, seating for up to seven, and an incredible 333 miles of range.</p>
+                                    <p class="car-price">$98,490</p>
+                                    <a href="#" class="cta-button add-to-cart-btn">Add to Cart</a>
+                                </div>
+                            </div>
+
+                            <div class="car-card" data-car-name="Model 3 Long Range" data-price="47490" data-image="images/model_3.jpg">
+                                <img src="images/model_3.jpg" alt="Tesla Model 3 Long Range">
+                                <div class="car-info">
+                                    <h3>Tesla Model 3 Long Range</h3>
+                                    <p class="car-description">High-performance electric sedan. All-wheel drive, premium interior, and superior handling for daily driving.</p>
+                                    <p class="car-price">$47,490</p>
+                                    <a href="#" class="cta-button add-to-cart-btn">Add to Cart</a>
+                                </div>
+                            </div>
+
+<div class="car-card" data-car-name="Cybertruck Tri-Motor" data-price="99990" data-image="images/cybertruck_tri.jpg">
+                                <img src="images/cybertruck_tri.jpg" alt="Tesla Cybertruck Tri-Motor">
+                                <div class="car-info">
+                                    <h3>Cybertruck Tri-Motor</h3>
+                                    <p class="car-description">Beast of a truck. All-wheel drive with Tri-Motor, 0-60 in 2.9 seconds, over 500 miles of range.</p>
+                                    <p class="car-price">$99,990</p>
+                                    <a href="#" class="cta-button add-to-cart-btn">Add to Cart</a>
+                                </div>
+                            </div>
+
+<div class="car-card" data-car-name="Cybertruck Dual-Motor" data-price="79990" data-image="images/cybertruck_dual.jpg">
+                                <img src="images/cybertruck_dual.jpg" alt="Tesla Cybertruck Dual-Motor">
+                                <div class="car-info">
+                                    <h3>Cybertruck Dual-Motor</h3>
+                                    <p class="car-description">Versatile and rugged. All-wheel drive, 300+ miles of range, perfect for work and adventure.</p>
+                                    <p class="car-price">$79,990</p>
+                                    <a href="#" class="cta-button add-to-cart-btn">Add to Cart</a>
+                                </div>
+                            </div>
+                            
+                            <div class="car-card" data-car-name="Cybertruck Rear-Wheel" data-price="60990" data-image="images/cybertruck_rear.jpg">
+                                <img src="images/cybertruck_rear.jpg" alt="Tesla Cybertruck Single-Motor">
+                                <div class="car-info">
+                                    <h3>Cybertruck Rear-Wheel</h3>
+                                    <p class="car-description">Single-motor rear-wheel drive, durable exoskeleton, and impressive towing capacity.</p>
+                                    <p class="car-price">$60,990</p>
+                                    <a href="#" class="cta-button add-to-cart-btn">Add to Cart</a>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </section>
+                </div>
+            </div>
+            
+            <div id="cart" class="page-content hidden">
+                <h2>🛒 Exclusive Car Checkout</h2>
+                <div class="content-panel">
+                    <p class="text-gray-400 mb-6">Review your selected Telsa vehicle(s) and proceed to checkout using your preferred cryptocurrency.</p>
+                    
+                    <div id="cart-items-container" class="space-y-4 min-h-24">
+                        <p class="text-gray-500 italic text-center py-10">Your cart is currently empty. Add a car from the New Investment page!</p>
+                    </div>
+
+                    <div class="mt-8 pt-4 border-t border-gray-700">
+                        <div class="flex justify-between items-center text-xl font-bold mb-4">
+                            <span>Grand Total:</span>
+                            <span id="cart-grand-total" class="text-red-500">$0.00</span>
+                        </div>
+                        
+                        <button id="checkout-button" class="action-link w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition duration-200 disabled:opacity-50" disabled>
+                            Proceed to Crypto Checkout
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+<div id="history" class="page-content hidden">
+                <h2>⏳ Transaction History</h2>
+                <div class="content-panel">
+                    <table class="min-w-full divide-y divide-gray-700">
+                        <thead>
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Transaction ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Type</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Amount</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-800" id="history-table-body">
+                            <tr class="bg-gray-800">
+                                <td colspan="4" class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500 italic">Loading transactions...</td>
+                            </tr>
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+            
+            <div id="profile" class="page-content hidden">
+                <h2>👤 My Profile</h2>
+                <div class="content-panel max-w-3xl">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <p class="text-gray-400 mb-1">Full Name</p>
+                            <p id="profile-name" class="text-lg font-semibold border-b border-gray-700 pb-1">Loading...</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400 mb-1">Client ID</p>
+                            <p id="profile-client-id" class="text-lg font-semibold border-b border-gray-700 pb-1 text-red-500">Loading...</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400 mb-1">Email Address</p>
+                            <p id="profile-email" class="text-lg font-semibold border-b border-gray-700 pb-1">Loading...</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400 mb-1">Account Status</p>
+                            <p class="text-lg font-semibold border-b border-gray-700 pb-1 text-green-500">Verified</p>
+                        </div>
+                    </div>
+                    
+                    <h3 class="text-xl font-semibold mt-8 mb-4 border-b border-gray-700 pb-2">Security Settings</h3>
+                    <button class="mt-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">Change Password</button>
+                    <button class="mt-2 ml-4 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">Set up 2FA</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    
+    <script>
+        
+        
+        // --- API & UTILITY DEFINITIONS ---
+        const API_BASE_URL = 'http://localhost:3000/api'; 
+        const CART_STORAGE_KEY = 'tesla_ai_car_cart'; 
+
+        // 4. Logout Handler Function
+        function handleLogout() {
+            localStorage.removeItem('userToken');
+            localStorage.removeItem('clientID'); // CRITICAL FIX: Use clientID consistently
+            localStorage.removeItem(CART_STORAGE_KEY); 
+            window.location.href = 'login.html'; 
+        }
+
+        // Function to fetch the authenticated user's profile data
+        async function fetchUserProfile(token) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/client/me`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`, 
+                    },
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                     alert('Session expired. Please log in again.');
+                     handleLogout();
+                     return null;
+                }
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ message: 'Failed to fetch profile data.' }));
+                    console.error('Profile fetch failed:', errorData.message);
+                    return null;
+                }
+
+                const data = await response.json();
+                return data; 
+                
+            } catch (error) {
+                console.error('Network or server error:', error);
+                return null;
+            }
+        }
+        
+        // --- NEW ACTIVITY / HISTORY FUNCTIONS (CRITICAL FIX: Full Implementation) ---
+        
+        /**
+         * Renders transaction data into a specified table body (Recent Activity or History).
+         * @param {Array} activityData - Array of transaction objects (type, amount, timestamp, transactionID, status).
+         * @param {string} tableBodyId - The ID of the <tbody> element to update.
+         */
+        function updateActivityTable(activityData, tableBodyId) {
+            const tableBody = document.getElementById(tableBodyId);
+            if (!tableBody) return;
+
+            tableBody.innerHTML = ''; // Clear existing table rows
+
+            // Determine if we are rendering the detailed History table (4 columns)
+            const isHistoryView = tableBodyId === 'history-table-body';
+            // Dashboard table has 3 columns, History has 4
+            const colCount = isHistoryView ? 4 : 3; 
+
+            if (!activityData || activityData.length === 0) {
+                const row = tableBody.insertRow();
+                row.className = 'bg-gray-800';
+                const cell = row.insertCell(0);
+                cell.colSpan = colCount;
+                cell.className = 'px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500 italic';
+                cell.textContent = 'No recent activity found.';
+                return;
+            }
+
+            activityData.forEach(item => {
+                // Format timestamp
+                let dateString = 'N/A';
+                if (item.timestamp) {
+                    const date = new Date(item.timestamp);
+                    if (!isNaN(date)) {
+                        // Use short format for Dashboard/Recent Activity
+                        const options = isHistoryView ? {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        } : {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            month: 'short',
+                            day: 'numeric'
+                        };
+                        dateString = date.toLocaleString('en-US', options);
+                    }
+                }
+                
+                // Determine amount color and sign
+                const amountValue = parseFloat(item.amount) || 0;
+                // Treat deposit, profit, or any positive amount as 'green'
+                const isDepositOrProfit = item.type.toLowerCase().includes('deposit') || 
+                                          item.type.toLowerCase().includes('profit') || 
+                                          item.type.toLowerCase().includes('bonus') || 
+                                          amountValue > 0;
+                
+                // Prefix with sign
+                let amountText = `${amountValue >= 0 ? '+' : ''}$${Math.abs(amountValue).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+                let amountClass = isDepositOrProfit ? 'text-green-400' : 'text-red-400';
+                
+                
+                // --- RENDERING LOGIC (Using DOM manipulation for consistency) ---
+                const row = tableBody.insertRow();
+                row.className = 'bg-gray-800 hover:bg-gray-700 transition duration-150';
+
+                if (isHistoryView) {
+                    // History View: 4 Columns (ID, Type, Amount, Date)
+                    
+                    // ID Cell
+                    row.insertCell(0).className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-300';
+                    row.cells[0].textContent = item.transactionID || 'N/A';
+
+                    // Type Cell
+                    row.insertCell(1).className = 'px-6 py-4 whitespace-nowrap text-sm font-medium text-white';
+                    row.cells[1].textContent = item.type || 'Transaction';
+                    
+                    // Amount Cell
+                    row.insertCell(2).className = `px-6 py-4 whitespace-nowrap text-right text-sm font-semibold ${amountClass}`;
+                    row.cells[2].textContent = amountText;
+                    
+                    // Date Cell
+                    row.insertCell(3).className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-400';
+                    row.cells[3].textContent = dateString;
+                } else {
+                    // Recent Activity View (Dashboard): 3 Columns (Date, Type, Amount)
+                    
+                    // Date Cell
+                    row.insertCell(0).className = 'px-6 py-2 whitespace-nowrap text-sm text-gray-400';
+                    row.cells[0].textContent = dateString;
+                    
+                    // Type Cell
+                    row.insertCell(1).className = 'px-6 py-2 whitespace-nowrap text-sm font-medium text-white';
+                    row.cells[1].textContent = item.type || 'Transaction';
+                    
+                    // Amount Cell
+                    row.insertCell(2).className = `px-6 py-2 whitespace-nowrap text-sm font-semibold text-right ${amountClass}`;
+                    row.cells[2].textContent = amountText;
+                }
+            });
+        }
+
+
+        /**
+         * Fetches all transaction history from the API and updates the History page.
+         */
+        async function fetchHistory() {
+            const token = localStorage.getItem('userToken');
+            if (!token) {
+                // Handle missing token gracefully
+                updateActivityTable([], 'history-table-body');
+                updateActivityTable([], 'recent-activity-table-body');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/client/activity`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+
+                if (!response.ok) {
+                    // If 401/403, session has expired
+                    if (response.status === 401 || response.status === 403) {
+                        alert('Session expired during activity fetch. Please log in again.');
+                        handleLogout();
+                        return;
+                    }
+                    throw new Error('Failed to fetch transaction history.');
+                }
+
+                const data = await response.json();
+                
+                // Update the main History table
+                updateActivityTable(data, 'history-table-body');
+                
+                // Update the Dashboard Recent Activity table (using only the first 5 items)
+                updateActivityTable(data.slice(0, 5), 'recent-activity-table-body');
+
+            } catch (error) {
+                console.error('Error fetching history:', error);
+                const errorData = [{ type: 'Fetch Error', amount: 0, timestamp: Date.now(), transactionID: 'ERR' }];
+                updateActivityTable(errorData, 'history-table-body');
+                updateActivityTable(errorData.slice(0, 1), 'recent-activity-table-body');
+            }
+        }
+        
+        // --- CART FUNCTIONS (Client-Side Storage) ---
+
+        function loadCart() {
+            const cartJson = localStorage.getItem(CART_STORAGE_KEY);
+            return cartJson ? JSON.parse(cartJson) : [];
+        }
+
+        function saveCart(cart) {
+            localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+        }
+
+        function addToCart(carName, carPrice, carImage) {
+            let cart = loadCart();
+            
+            // Allow only one item (since these are high-value unique cars)
+            if (cart.length > 0) {
+                alert(`⚠️ You can only purchase one vehicle at a time. Please remove the current item to add a new one.`);
+                return;
+            }
+            
+            cart.push({
+                name: carName,
+                price: parseFloat(carPrice),
+                quantity: 1, 
+                image: carImage
+            });
+            
+            saveCart(cart);
+            alert(`✅ ${carName} added to the Exclusive Shop Cart! Navigate to "Shopping Cart" to checkout.`);
+            // Automatically switch to cart page if on a desktop or if mobile is active
+            if (window.location.hash !== '#cart') {
+                 window.location.hash = '#cart'; // CRITICAL FIX: Ensure hash includes '#'
+            } else {
+                 renderCart(); 
+            }
+        }
+
+        function removeFromCart(carName) {
+            let cart = loadCart();
+            cart = cart.filter(item => item.name !== carName);
+            saveCart(cart);
+            renderCart();
+        }
+        
+        // Renders the cart dynamically
+        function renderCart() {
+            const container = document.getElementById('cart-items-container');
+            const totalDisplay = document.getElementById('cart-grand-total');
+            let checkoutButton = document.getElementById('checkout-button');
+            let cart = loadCart();
+            let grandTotal = 0;
+            
+            if (cart.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 italic text-center py-10">Your cart is currently empty. Add a car from the New Investment page!</p>';
+                totalDisplay.textContent = '$0.00';
+                checkoutButton.disabled = true;
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                grandTotal += itemTotal;
+                
+                const cartItemHTML = `
+                    <div class="flex items-center justify-between p-4 bg-gray-800 rounded-lg border border-gray-700">
+                        <div class="flex items-center space-x-4">
+                            <img src="${item.image}" alt="${item.name}" class="w-16 h-10 object-cover rounded-md hidden sm:block">
+                            <div>
+
+                                <p class="font-semibold text-white">${item.name}</p>
+                                <p class="text-sm text-gray-400">Price: $${item.price.toLocaleString('en-US')}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <span class="text-lg font-bold text-red-400">$${itemTotal.toLocaleString('en-US')}</span>
+                            <button class="remove-from-cart-btn text-gray-400 hover:text-red-500 transition" data-car-name="${item.name}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cartItemHTML;
+            });
+
+            totalDisplay.textContent = `$${grandTotal.toLocaleString('en-US')}`;
+            checkoutButton.disabled = false;
+
+            // Remove previous checkout listener to avoid multiple event handlers (Crucial SPA fix)
+            const newCheckoutButton = checkoutButton.cloneNode(true);
+            checkoutButton.parentNode.replaceChild(newCheckoutButton, checkoutButton);
+            checkoutButton = newCheckoutButton; 
+            
+            // CAR CHECKOUT REDIRECTION LOGIC
+            checkoutButton.addEventListener('click', () => {
+                 if (cart.length === 0) return; 
+
+                 const carItem = cart[0];
+                 const carName = carItem.name.replace(/ /g, '_'); 
+                 const carPrice = carItem.price;
+                 
+                 alert(`Redirecting to crypto payment portal for $${grandTotal.toLocaleString('en-US')}. Thank you for your ${carItem.name} purchase!`);
+                 
+                 // Clear the cart after notification, before redirecting
+                 localStorage.removeItem(CART_STORAGE_KEY);
+                 
+                 // Redirect to a mock checkout page with parameters
+                 window.location.href = `checkout.html?mode=car&item=${carName}&price=${carPrice}`;
+            });
+
+            // Re-attach listeners for dynamically created remove buttons
+            document.querySelectorAll('.remove-from-cart-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const carName = e.currentTarget.getAttribute('data-car-name');
+                    removeFromCart(carName);
+                });
+            });
+        }
+        
+        // Navigation function: Hides all pages and shows the one matching the pageId
+        function showPage(pageId) {
+            const pageContents = document.querySelectorAll('.page-content');
+            const navLinks = document.querySelectorAll('.sidebar nav a');
+            const sidebar = document.getElementById('sidebar');
+
+            pageContents.forEach(page => {
+                page.classList.add('hidden');
+            });
+
+            const activePage = document.getElementById(pageId);
+            if (activePage) {
+                activePage.classList.remove('hidden');
+                // Render cart only when the cart page is visible
+                if (pageId === 'cart') {
+                    renderCart();
+                } 
+                // Fetch history only when the history page is visible
+                if (pageId === 'history') { 
+                    fetchHistory(); 
+                } 
+            }
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('data-page') === pageId) {
+                    link.classList.add('active');
+                }
+            });
+            
+            // Hide sidebar after selecting a page on mobile
+            if (window.innerWidth <= 900) {
+                sidebar.classList.remove('active');
+            }
+        }
+
+// --- MAIN PAGE LOAD LOGIC ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            
+            const token = localStorage.getItem('userToken');
+            const navLinks = document.querySelectorAll('.sidebar nav a');
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.getElementById('menuToggle');
+
+            if (!token) {
+                window.location.href = 'login.html';
+                return; 
+            }
+            
+            const profileData = await fetchUserProfile(token); 
+            
+            if (!profileData) {
+                // If fetching failed and handleLogout wasn't called (e.g., network error)
+                document.getElementById('welcome-name').textContent = 'Error';
+                document.getElementById('initial-balance-note').textContent = 'Connection Failed';
+                return; 
+            }
+
+            // CRITICAL FIX 1: UPDATE DESTRUCTURING TO MATCH SERVER ALIASES (Assuming camelCase on clientID, profit, investment, nextPayout)
+            const { name, clientID, email, balance, profit, investment, nextPayout } = profileData; 
+            
+            // 1. Update Profile/UI Data
+            if (name) {
+                const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2); 
+                document.getElementById('welcome-name').textContent = name;
+                document.getElementById('user-avatar').textContent = initials;
+                if (document.getElementById('profile-name')) {
+                    document.getElementById('profile-name').textContent = name;
+                }
+            }
+            
+            // --- CRITICAL FIX 2: UPDATE FINANCIAL STATS TO USE CORRECT VARIABLES ---
+            if (balance !== undefined) {
+                const clientBalance = parseFloat(balance); // Use 'balance'
+                // Update Dashboard stats
+                document.getElementById('total-balance').textContent = `$${clientBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+                document.getElementById('wallet-balance-display').textContent = clientBalance.toLocaleString('en-US', { minimumFractionDigits: 2 });
+                
+                // Update bonus note visibility/amount
+                if (clientBalance > 0) {
+                    // Hide generic note
+                    document.getElementById('initial-balance-note').classList.add('hidden');
+                    
+                    // Logic to show $200 bonus
+                    if (clientBalance >= 200 && clientBalance < 500) { // A slightly safer check for initial/low balance
+                        document.getElementById('bonus-amount').textContent = '200.00'; // Hardcode the bonus amount if applicable
+                        document.getElementById('bonus-note').classList.remove('hidden');
+                    } else {
+                        document.getElementById('bonus-note').classList.add('hidden');
+                    }
+                } else {
+                    document.getElementById('initial-balance-note').classList.remove('hidden');
+                    document.getElementById('bonus-note').classList.add('hidden');
+                }
+            }
+            
+            if (profit !== undefined) {
+                const clientProfit = parseFloat(profit); // Use 'profit'
+                document.getElementById('total-profit').textContent = `$${clientProfit.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+                
+                if (investment !== undefined && parseFloat(investment) > 0) { // Use 'investment'
+                    const profitPercentage = (clientProfit / parseFloat(investment)) * 100;
+                    document.getElementById('profit-percentage').textContent = `${profitPercentage.toFixed(2)}% ROI`;
+                } else {
+                    document.getElementById('profit-percentage').textContent = '0.0% All Time';
+                }
+            }
+
+            if (investment !== undefined && parseFloat(investment) > 0) { // Use 'investment'
+                 document.getElementById('active-investment').textContent = `$${parseFloat(investment).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+                 document.getElementById('active-investment-status').textContent = 'Active Plan';
+                 document.getElementById('active-investment-status').classList.remove('deposit');
+                 document.getElementById('active-investment-status').classList.add('growth');
+            } else {
+                 document.getElementById('active-investment').textContent = '$0.00';
+                 document.getElementById('active-investment-status').textContent = 'No Active Plan';
+                 document.getElementById('active-investment-status').classList.remove('growth');
+                 document.getElementById('active-investment-status').classList.add('deposit');
+            }
+            
+            // Payout Date Update (from initial fetch)
+            const nextPayoutElement = document.getElementById('next-payout');
+            const nextPayoutStatusElement = document.getElementById('next-payout-status');
+
+            if (nextPayout && nextPayout !== 'N/A' && nextPayout !== 'null') {
+                nextPayoutElement.textContent = nextPayout;
+                nextPayoutStatusElement.textContent = 'Active Investment';
+            } else {
+                nextPayoutElement.textContent = 'N/A';
+                nextPayoutStatusElement.textContent = 'No Active Investment';
+            }
+
+
+            if (clientID) {
+                document.getElementById('client-id-sidebar').textContent = clientID;
+                if (document.getElementById('client-id-mobile')) {
+                    document.getElementById('client-id-mobile').textContent = `ID: ${clientID}`;
+                }
+                if (document.getElementById('profile-client-id')) {
+                    document.getElementById('profile-client-id').textContent = clientID;
+                }
+            }
+            
+            if (email && document.getElementById('profile-email')) {
+                document.getElementById('profile-email').textContent = email;
+            }
+            
+            // --- INITIAL DATA LOAD ---
+            // Note: fetchHistory now handles both dashboard and history table updates.
+            fetchHistory(); 
+
+            // --- 2. Navigation Logic (SPA Style) ---
+            const initialHash = window.location.hash.substring(1) || 'home';
+            showPage(initialHash);
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const pageId = link.getAttribute('data-page');
+                    // Set hash to trigger hashchange event, which calls showPage
+                    window.location.hash = pageId; 
+                });
+            });
+            
+            window.addEventListener('hashchange', () => {
+                const pageId = window.location.hash.substring(1) || 'home';
+                showPage(pageId);
+            });
+
+            // --- 3. Mobile Menu Toggle ---
+            if (menuToggle) {
+                menuToggle.addEventListener('click', () => {
+                    sidebar.classList.toggle('active');
+                });
+            }
+
+// --- 4. Logout Handler ---
+            document.getElementById('logout-button').addEventListener('click', (e) => {
+                e.preventDefault();
+                handleLogout();
+            });
+            
+            // --- 5. Investment Plan/Car Shop Interaction Logic ---
+            // Event delegation for "Add to Cart" buttons
+            document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault(); 
+                    const carCard = e.currentTarget.closest('.car-card');
+                    const carName = carCard.getAttribute('data-car-name');
+                    const carPrice = carCard.getAttribute('data-price');
+                    const carImage = carCard.querySelector('img').getAttribute('src'); // Use the image path
+                    
+                    addToCart(carName, carPrice, carImage);
+                });
+            });
+            
+            // Initial call to render cart if the hash leads there
+            if (initialHash === 'cart') {
+                renderCart();
+            }
+
+            // --- 6. Live Support Chat Initialization (Placeholder) ---
+            // Note: This block requires adding the #chat page and elements like #chat-window to the HTML.
+            // Since the HTML is missing, this is provided for completeness but won't fully function yet.
+            const chatWindow = document.getElementById('chat-window');
+            const chatInput = document.getElementById('chat-input');
+            const chatSendButton = document.getElementById('chat-send-button');
+            
+            let chatSocket = null;
+            let isChatInitialized = false;
+            const clientIDForSocket = localStorage.getItem('clientID'); // Use local storage variable
+            
+            // This function would be called when the user navigates to the #chat page
+            function initializeChat() {
+                if (isChatInitialized || !clientIDForSocket || !token) return;
+
+                // Initialize Socket.IO connection and join the client's room
+                chatSocket = io({
+                    query: { token } // Pass the token for authentication
+                });
+                
+                chatSocket.on('connect', () => {
+                    displayChatSystemMessage('Connected to live support. An agent will join shortly.');
+                    // Emit an event to join a private room
+                    chatSocket.emit('join-support-room', clientIDForSocket); 
+                    isChatInitialized = true;
+                });
+                
+                chatSocket.on('admin-message', (data) => {
+                    // Receive message from admin
+                    displayChatMessage('admin', data.message);
+                });
+
+                chatSocket.on('disconnect', () => {
+                    displayChatSystemMessage('Disconnected from support. Please refresh or try again.');
+                    isChatInitialized = false;
+                });
+
+                // Check if elements exist before adding listeners
+                if (chatSendButton) chatSendButton.addEventListener('click', sendMessage);
+                if (chatInput) chatInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+            }
+            
+            function sendMessage() {
+                if (!chatInput || !chatSocket || !clientIDForSocket) return;
+
+                const message = chatInput.value.trim();
+                if (message) {
+                    const data = {
+                        senderID: clientIDForSocket,
+                        message: message
+                    };
+                    chatSocket.emit('client-message', data);
+                    displayChatMessage('client', message);
+                    chatInput.value = '';
+                }
+            }
+
+            function displayChatMessage(sender, text) {
+                if (!chatWindow) return; // Prevent error if chat window isn't in HTML
+                const isClient = sender === 'client';
+                const msgDiv = document.createElement('div');
+                msgDiv.className = `flex ${isClient ? 'justify-end' : 'justify-start'}`;
+                
+                const bubble = document.createElement('div');
+                bubble.className = `${isClient ? 'bg-gray-600 rounded-tr-none' : 'bg-red-500 rounded-tl-none'} text-white p-3 rounded-xl max-w-xs`;
+                bubble.textContent = text;
+                
+                msgDiv.appendChild(bubble);
+                chatWindow.appendChild(msgDiv);
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }
+
+            function displayChatSystemMessage(text) {
+                if (!chatWindow) return;
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'text-center text-sm text-gray-500 italic';
+                msgDiv.textContent = text;
+                chatWindow.appendChild(msgDiv);
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }
+
+            // Only initialize chat if the user is on the chat page or navigates to it
+            if (initialHash === 'chat') {
+                initializeChat();
+            }
+            
+            window.addEventListener('hashchange', () => {
+                const pageId = window.location.hash.substring(1) || 'home';
+                if (pageId === 'chat' && !isChatInitialized) {
+                    initializeChat();
+                }
+            });
+
+            // --- 7. Real-Time Financial Updates (Socket.IO Listener - CRITICAL FIX) ---
+            if (clientID) {
+                const financialSocket = io(); // Connects to the host server
+                
+                financialSocket.on('connect', () => {
+                    console.log('Connected for financial updates.');
+                    // Emit an event to join a private room using the clientID
+                    financialSocket.emit('client-join-support', clientID); 
+                });
+
+                // Listen for the 'financial-update' event (for balances/payout)
+                financialSocket.on('financial-update', (data) => {
+                    console.log('Received real-time financial update:', data);
+                 
+
+                    // Update Total Balance
+                    if (data.balance !== undefined) {
+                        const balance = parseFloat(data.balance);
+                        document.getElementById('total-balance').textContent = `$${balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+                        document.getElementById('wallet-balance-display').textContent = balance.toLocaleString('en-US', { minimumFractionDigits: 2 });
+                    }
+
+                    // Update Total Profit
+                    if (data.profit !== undefined) {
+                        const profit = parseFloat(data.profit);
+                        document.getElementById('total-profit').textContent = `$${profit.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+                    }
+
+                    // Update Active Investment
+                    if (data.investment !== undefined) {
+                        const investment = parseFloat(data.investment);
+                        document.getElementById('active-investment').textContent = `$${investment.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+                        
+                        const statusElement = document.getElementById('active-investment-status');
+                        if (investment > 0) {
+                            statusElement.textContent = 'Active Plan';
+                            statusElement.classList.remove('deposit');
+                            statusElement.classList.add('growth');
+                        } else {
+                            statusElement.textContent = 'No Active Plan';
+                            statusElement.classList.remove('growth');
+                            statusElement.classList.add('deposit');
+                        }
+                    }
+
+                    // Update Next Payout
+                    const nextPayoutElement = document.getElementById('next-payout');
+                    const nextPayoutStatusElement = document.getElementById('next-payout-status');
+                    // NOTE: Server sends 'nextPayoutDate' or 'nextPayout'. Assuming 'nextPayout' is the correct property.
+                    const payoutDate = data.nextPayoutDate !== undefined ? data.nextPayoutDate : data.nextPayout; 
+
+                    if (payoutDate && payoutDate !== 'N/A' && payoutDate !== 'null') {
+                        nextPayoutElement.textContent = payoutDate;
+                        nextPayoutStatusElement.textContent = 'Active Investment';
+                    } else {
+                        nextPayoutElement.textContent = 'N/A';
+                        nextPayoutStatusElement.textContent = 'No Active Investment';
+                    }
+                });
+
+                // --- NEW: Listen for the 'activity-update' event (for live transactions) ---
+                financialSocket.on('activity-update', (activities) => { // Renamed 'data' to 'activities' for clarity
+                    console.log('Received real-time activity update:', activities);
+                    
+                    // Update the Dashboard Recent Activity section (top 5)
+                    updateActivityTable(activities.slice(0, 5), 'recent-activity-table-body');
+                    
+                    // If the user is currently viewing the full History page, update that too
+                    if (window.location.hash === '#history') {
+                        updateActivityTable(activities, 'history-table-body');
+                    }
+                });
+                // --- END NEW Listener ---
+
+            }
+            // --- END Real-Time Financial Updates ---
+            
+        });
+    </script>
+    <script type="text/javascript">
+// CRITICAL FIX: Corrected smartsupp initialization syntax
+var _smartsupp = _smartsupp || {};
+_smartsupp.key = '3a103776319ecd444c986c3662f86f78542e8c73';
+window.smartsupp = (function(d) {
+  var s,c,o=smartsupp=function(){ o._.push(arguments)};o._=[];
+  s=d.getElementsByTagName('script')[0];c=d.createElement('script');
+  c.type='text/javascript';c.charset='utf-8';c.async=true;
+  c.src='https://www.smartsuppchat.com/loader.js?';s.parentNode.insertBefore(c,s);
+  return o;
+})(document);
+</script>
+<noscript> Powered by <a href="https://www.smartsupp.com" target="_blank">Smartsupp</a></noscript>
+
+</body>
+</html>
