@@ -821,7 +821,11 @@
         
         
         // --- API & UTILITY DEFINITIONS ---
-        const API_BASE_URL = 'http://localhost:3000/api'; 
+       // The Fix (Using your deployed domain):
+const BASE_API_URL = 'https://teslaaai.onrender.com/api'; 
+
+// And the fetch call:
+fetch(`${BASE_API_URL}/client/me`, { /* ... */ }) 
         const CART_STORAGE_KEY = 'tesla_ai_car_cart'; 
 
         // 4. Logout Handler Function
