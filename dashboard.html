@@ -839,7 +839,7 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
         // Function to fetch the authenticated user's profile data
         async function fetchUserProfile() {
     // 1. Get the token
-    const token = localStorage.getItem('clientToken'); 
+    const token = localStorage.getItem('userToken'); 
     
     // 2. Check if token exists
     if (!token) {
@@ -861,7 +861,7 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
 
         if (response.status === 401 || response.status === 403) {
             // Handle expired/invalid token
-            localStorage.removeItem('clientToken');
+            localStorage.removeItem('userToken');
             window.location.href = '/'; 
             return;
         }
