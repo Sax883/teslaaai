@@ -9,9 +9,9 @@ const fs = require('fs');
 const cors = require('cors'); 
 
 // --- CRITICAL PATH ADJUSTMENT ---
-// FIX: Since Render's Root Directory is set to the 'server' folder, 
-// the root directory for the app is the current directory ('.').
-const ROOT_DIR = __dirname;
+// FIX: The server.js is in /server, but index.html is in the root. 
+// We must point to the parent directory (..).
+const ROOT_DIR = path.join(__dirname, '..'); // <-- THIS IS THE CRITICAL FIX
 
 // --- CRITICAL CHANGE: Import the new PostgreSQL-compatible database module ---
 const db = require('./database'); // This now exports { query, pool }
@@ -59,7 +59,7 @@ app.use('/api', apiRouter);
 
 // Static file serving
 // This must be placed AFTER the API router link (app.use('/api', apiRouter))
-// The ROOT_DIR is now the 'server' subdirectory, so it serves files correctly.
+// Since ROOT_DIR is the parent (repo root), this now correctly serves index.html.
 app.use(express.static(ROOT_DIR)); 
 
 
