@@ -9,7 +9,9 @@ const fs = require('fs');
 const cors = require('cors'); 
 
 // --- CRITICAL PATH ADJUSTMENT ---
-const ROOT_DIR = path.join(__dirname, '..');
+// FIX: Since Render's Root Directory is set to the 'server' folder, 
+// the root directory for the app is the current directory ('.').
+const ROOT_DIR = __dirname;
 
 // --- CRITICAL CHANGE: Import the new PostgreSQL-compatible database module ---
 const db = require('./database'); // This now exports { query, pool }
@@ -22,7 +24,8 @@ const adminUser = {
     password: '@Divine081', // WARNING: This should be hashed in production!
     role: 'admin'
 };
-const SECRET_KEY = process.env.JWT_SECRET || 'YOUR_SUPER_SECRET_KEY'; // IMPORTANT: Load from env for production!
+// IMPORTANT: Load from env for production!
+const SECRET_KEY = process.env.JWT_SECRET || 'YOUR_SUPER_SECRET_KEY_FALLBACK'; 
 
 // Chat History structure (In-memory storage)
 const chatHistory = {};
@@ -50,13 +53,13 @@ app.use(cors({
 
 // --- 3. API Routes (Client and Admin) ---
 // 🚨 CRITICAL FIX: Define and link apiRouter immediately after global middleware 
-// to prevent express.static from interfering with /api POST requests.
 const apiRouter = express.Router();
 app.use('/api', apiRouter);
 
 
 // Static file serving
 // This must be placed AFTER the API router link (app.use('/api', apiRouter))
+// The ROOT_DIR is now the 'server' subdirectory, so it serves files correctly.
 app.use(express.static(ROOT_DIR)); 
 
 
@@ -397,6 +400,7 @@ apiRouter.post('/register', async (req, res) => {
     } catch (err) {
         // Log the full error object for better debugging
         console.error("Database error during registration:", err); 
+        // Note: For a true failure (DB connection down), you might want to exit or log more severely.
         return res.status(500).json({ message: 'Database error during registration.' });
     }
 });
@@ -598,6 +602,7 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
+    // NOTE: For live environment, these localhost URLs are for local testing reference only.
     console.log(`Access the application at: http://localhost:${PORT}/`);
     console.log(`Admin Panel: http://localhost:${PORT}/admin.html`);
 });
