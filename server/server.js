@@ -435,6 +435,7 @@ apiRouter.post('/client-login', async (req, res) => {
 apiRouter.get('/client/me', verifyClientToken, async (req, res) => {
     const clientID = req.user.id;
 
+    // CRITICAL FIX IMPLEMENTED HERE: Cast "nextPayout" to TEXT to prevent front-end rendering errors if null.
     const sql = `
         SELECT 
             "clientID", 
@@ -443,7 +444,7 @@ apiRouter.get('/client/me', verifyClientToken, async (req, res) => {
             "totalBalance" AS balance, 
             "totalProfit" AS profit, 
             "activeInvestment" AS investment, 
-            "nextPayout" 
+            CAST("nextPayout" AS TEXT) AS "nextPayout" 
         FROM clients 
         WHERE "clientID" = $1
     `;
