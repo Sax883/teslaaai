@@ -533,12 +533,7 @@ footer a {
     color: var(--color-primary); /* Red for withdrawals */
 }
 
-/* ------------------------------------------- */
-/* --- REMOVED: Ineffective horizontal scroll rules for history-container and transaction-item --- */
-/* ------------------------------------------- */
-
 /* --- UPDATED RESPONSIVE FRONT-END STYLES --- */
-/* ------------------------------------------- */
 
 /* --- OUR VISION & TEAM SECTION STYLES (Updated for consistent alignment) --- */
 
@@ -799,22 +794,37 @@ footer a {
         padding: 20px 15px;
     }
 
-    /* Force the transaction item container/table to be wide enough to scroll */
+    /* Reduce padding inside the activity box */
     .recent-activity {
-        padding: 10px; /* Reduce padding inside the activity box */
+        padding: 15px; 
     }
 
-    /* The transaction-item (Recent Activity on Dashboard) stacking */
+    /* ------------------------------------------- */
+    /* ✅ FIX 1: DASHBOARD RECENT ACTIVITY STACKING (.transaction-item) */
+    /* ------------------------------------------- */
+    
+    /* Ensure the transaction item stacks vertically */
     .transaction-item {
         flex-direction: column; 
         align-items: flex-start;
-        padding: 15px 0;
+        padding: 10px 0;
+        margin-bottom: 5px; 
     }
+    
+    /* Make each piece of data take up the full width */
     .transaction-item > div {
         width: 100%;
         flex-basis: auto;
         padding: 2px 0;
         text-align: left !important;
+        font-size: 0.9rem; /* Slightly smaller text for compactness */
+    }
+    
+    /* Use data attributes to display labels on mobile (Requires HTML/JS change) */
+    .transaction-item > div::before {
+        content: attr(data-label) ": "; 
+        font-weight: 600;
+        color: var(--color-text-dark); 
     }
     
     /* Make the whole sidebar collapse on mobile */
@@ -830,7 +840,7 @@ footer a {
     }
 
     /* ------------------------------------------- */
-    /* ✅ NEW: VERTICAL TRANSACTION HISTORY TABLE STACK FIX */
+    /* ✅ FIX 2: HISTORY PAGE TABLE STACKING (#history table) */
     /* ------------------------------------------- */
     
     #history .content-panel {
