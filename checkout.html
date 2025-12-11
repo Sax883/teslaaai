@@ -151,7 +151,7 @@
                 justify-content: space-between;
             }
             .address-box code {
-                 margin-bottom: 0;
+                margin-bottom: 0;
             }
             .copy-button {
                 width: auto;
@@ -309,12 +309,14 @@
         // --- GLOBAL VARIABLES (CRITICAL) ---
         let purchasedItemName = ''; 
         let preselectedNetwork = ''; 
+        let transactionTypeForAPI = ''; // e.g., 'Deposit', 'Investment', 'Car Plan'
         // ------------------------------------
 
-        // 🟢 Saves the transaction details to the browser's local storage
-        function saveTransactionToHistory(mode, item, price, network) {
+        // 🟢 Saves the transaction details to the browser's local storage (NOW using server ID)
+        function saveTransactionToHistory(mode, item, price, network, transactionID) {
             const transactions = JSON.parse(localStorage.getItem('transactionHistory')) || [];
             
+            // Map the transactionTypeForAPI to a user-friendly display name
             let type = 'Deposit';
             if (mode === 'plan') {
                 type = 'Plan Purchase';
@@ -323,20 +325,20 @@
             }
             
             const newTransaction = {
-                id: Date.now(),
+                id: transactionID || Date.now(),
                 date: new Date().toLocaleDateString('en-US'),
                 time: new Date().toLocaleTimeString('en-US'),
                 type: type,
-                description: purchasedItemName || item.replace(/_/g, ' '), // Use the globally stored name
+                description: purchasedItemName || item.replace(/_/g, ' '),
                 amount: parseFloat(price), 
                 network: network,
-                // STATUS IS SET TO PENDING
+                // Status is recorded as Pending Confirmation, awaiting server verification
                 status: 'Pending Confirmation', 
             };
 
             transactions.unshift(newTransaction);
             localStorage.setItem('transactionHistory', JSON.stringify(transactions));
-            console.log('Transaction saved to history:', newTransaction);
+            console.log('Transaction saved to local history:', newTransaction);
         }
         
         function updateSteps(activeStep) {
@@ -389,25 +391,28 @@
 
             if (mode === 'deposit') {
                 transactionTypeDisplay = 'Deposit';
+                transactionTypeForAPI = 'Deposit'; // For API
                 itemContext = 'Fund Deposit';
                 purchasedItemName = itemContext; 
                 document.querySelector('.top-bar h1').textContent = 'Deposit Funds Checkout';
                 document.getElementById('summary-text').textContent = 'Please confirm the details of your fund deposit.';
-                successMessage = 'Your deposit confirmation is received and is awaiting administrative approval and fund verification.'; // UPDATED MESSAGE
+                successMessage = 'Your deposit confirmation is received and is awaiting administrative approval and fund verification.'; 
             } else if (mode === 'plan' && itemName) {
                 transactionTypeDisplay = 'Investment Plan';
+                transactionTypeForAPI = 'Investment'; // For API
                 itemContext = itemName.replace(/_/g, ' ') + ' Plan';
                 purchasedItemName = itemContext; 
                 document.querySelector('.top-bar h1').textContent = 'Investment Plan Checkout';
                 document.getElementById('summary-text').textContent = 'Please confirm the details of your selected investment plan.';
-                successMessage = 'Your investment has been registered and is pending administrative approval. Your plan will activate once the payment is verified.'; // UPDATED MESSAGE
+                successMessage = 'Your investment has been registered and is pending administrative approval. Your plan will activate once the payment is verified.'; 
             } else if (itemName) { // Assumed Car Purchase
                 transactionTypeDisplay = 'Luxury Vehicle';
+                transactionTypeForAPI = 'Car Plan'; // For API
                 itemContext = itemName.replace(/_/g, ' ');
                 purchasedItemName = itemContext; 
                 document.querySelector('.top-bar h1').textContent = 'Luxury Vehicle Checkout';
                 document.getElementById('summary-text').textContent = 'Please confirm the details of your selected Tesla vehicle purchase.';
-                successMessage = 'Your vehicle purchase request is pending. Once verified by our administration, the Tesla sales team will contact you within 48 hours via your registered email to finalize delivery details.'; // UPDATED MESSAGE
+                successMessage = 'Your vehicle purchase request is pending. Once verified by our administration, the Tesla sales team will contact you within 48 hours via your registered email to finalize delivery details.'; 
             }
 
             // Update success message in step 3
@@ -463,29 +468,86 @@
             
         });
         
-        // 🚨 CONFIRMATION FUNCTION (This is the critical function that was fixed)
-        window.confirmPaymentSent = function() {
-            const mode = getQueryParam('mode'); 
-            const itemName = getQueryParam('item'); 
+        // 🚨 NEW API CALL: CONFIRMATION FUNCTION 
+        window.confirmPaymentSent = async function() {
+            const token = localStorage.getItem('clientToken');
             const price = getQueryParam('price');
             
-            // Use the globally stored network variable
-            const finalNetwork = preselectedNetwork || 'N/A';
-            
-            // 1. Save Transaction History (Status: 'Pending Confirmation')
-            saveTransactionToHistory(mode, itemName, price, finalNetwork);
+            if (!token) {
+                alert('Authentication required. Please log in again.');
+                window.location.href = 'login.html';
+                return;
+            }
 
-            // 2. Update Step 3 Display Text
-            document.getElementById('confirmed-item').innerText = purchasedItemName;
-            
-            // 3. Move to Step 3 (Success/Status View)
-            updateSteps(3);
+            if (!transactionTypeForAPI || !price) {
+                alert('Transaction data is missing. Cannot proceed.');
+                return;
+            }
+
+            // Show a loading indicator if necessary, or disable the button
+            const confirmButton = document.querySelector('#crypto-payment .cta-button');
+            confirmButton.disabled = true;
+            confirmButton.textContent = 'Processing...';
+
+            try {
+                const response = await fetch('/api/client/transaction', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        type: transactionTypeForAPI,
+                        amount: price,
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // 1. Save Transaction to local history for display (using server's new ID)
+                    saveTransactionToHistory(
+                        getQueryParam('mode'), 
+                        getQueryParam('item'), 
+                        price, 
+                        preselectedNetwork,
+                        result.transactionID
+                    );
+
+                    // 2. Update Step 3 Display Text
+                    document.getElementById('confirmed-item').innerText = purchasedItemName;
+                    
+                    // 3. Move to Step 3 (Success/Status View)
+                    updateSteps(3);
+
+                } else {
+                    // Handle API error
+                    alert('Error submitting transaction claim: ' + (result.message || 'Server error'));
+                    console.error('Server error:', result);
+                    // Re-enable button and reset text on failure
+                    confirmButton.disabled = false;
+                    confirmButton.textContent = 'I Have Sent Payment';
+                }
+
+            } catch (error) {
+                console.error('Network or Fetch Error:', error);
+                alert('A network error occurred while submitting your payment confirmation.');
+                // Re-enable button and reset text on failure
+                confirmButton.disabled = false;
+                confirmButton.textContent = 'I Have Sent Payment';
+            }
         }
 
         window.copyAddress = function() {
             const address = document.getElementById('checkout-address').innerText;
             navigator.clipboard.writeText(address).then(() => {
-                alert('Address copied to clipboard!');
+                // Replaces the button text temporarily
+                const btn = document.querySelector('.copy-button');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                }, 1000);
             }, (err) => {
                 console.error('Could not copy text: ', err);
                 alert('Failed to copy address.');

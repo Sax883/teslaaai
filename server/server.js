@@ -37,7 +37,7 @@ const ADMIN_ROOM = 'admin-room'; // Room for Admin notifications
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
+const io = new new Server(server, {
     cors: {
         origin: "*", // Allow all origins for simplicity in testing
         methods: ["GET", "POST", "PUT"]
@@ -212,26 +212,23 @@ apiRouter.put('/admin/transaction/:id', verifyAdminToken, async (req, res) => {
         if (status === 'Completed') {
             const transactionAmount = parseFloat(transaction.amount);
 
-            if (transaction.type === 'Deposit') {
+            if (transaction.type === 'Deposit' || transaction.type === 'Bonus' || transaction.type === 'Profit Payout') {
                 balanceChange = transactionAmount;
                 finalMessage += ` Balance credited $${transactionAmount.toFixed(2)}.`;
             } else if (transaction.type === 'Withdrawal') {
                 // Assuming a 3% fee on withdrawals
                 const feeRate = 0.03;
-                const netWithdrawalAmount = transactionAmount * (1 + feeRate); // We debit the gross amount including fee
+                // We debit the gross amount including fee (amount + fee)
+                const netWithdrawalAmount = transactionAmount * (1 + feeRate); 
                 
                 // Debit the balance (The client pays the full gross amount)
                 balanceChange = -netWithdrawalAmount; 
-                finalMessage += ` Balance debited $${netWithdrawalAmount.toFixed(2)} (3% fee deducted from withdrawal).`;
+                finalMessage += ` Balance debited $${netWithdrawalAmount.toFixed(2)} (3% fee applied).`;
             } else if (transaction.type === 'Investment' || transaction.type === 'Car Plan') {
                  // Debit the balance and credit active investment
                  balanceChange = -transactionAmount;
                  investmentChange = transactionAmount;
                  finalMessage += ` Balance debited $${transactionAmount.toFixed(2)} and Active Investment credited.`;
-            } else if (transaction.type === 'Profit Payout') {
-                 // Credit the balance
-                 balanceChange = transactionAmount;
-                 finalMessage += ` Balance credited $${transactionAmount.toFixed(2)} as Profit Payout.`;
             }
         }
         
@@ -267,10 +264,10 @@ apiRouter.put('/admin/transaction/:id', verifyAdminToken, async (req, res) => {
         // 6. Notify Client Dashboard of Final Status and updated financials (Broadcasts)
         broadcastRecentActivity(clientID); 
         
-        // Fetch and broadcast the updated financial metrics (balance, investment)
+        // Fetch and broadcast the updated financial metrics (balance, investment, profit, payout)
         const selectSql = `
             SELECT 
-                "clientID", "totalBalance" AS balance, "activeInvestment" AS investment, "totalProfit" AS profit, "nextPayout"
+                "clientID", "totalBalance" AS balance, "activeInvestment" AS investment, "totalProfit" AS profit, CAST("nextPayout" AS TEXT) AS "nextPayout"
             FROM clients
             WHERE "clientID" = $1
         `;
@@ -280,6 +277,7 @@ apiRouter.put('/admin/transaction/:id', verifyAdminToken, async (req, res) => {
 
         if (updatedData) {
             io.to(clientID).emit('financial-update', updatedData);
+            console.log(`[SOCKET.IO] Broadcasted Financial Update for Client: ${clientID}`);
         }
         
     } catch (err) {
@@ -305,7 +303,7 @@ apiRouter.get('/admin/clients', verifyAdminToken, async (req, res) => {
             "totalBalance" AS balance, 
             "activeInvestment" AS investment, 
             "totalProfit" AS profit,
-            "nextPayout"
+            CAST("nextPayout" AS TEXT) AS "nextPayout"
         FROM clients
     `;
     try {
@@ -345,7 +343,7 @@ apiRouter.put('/admin/client/:clientID', verifyAdminToken, async (req, res) => {
         // 1. Fetch the newly updated data from the DB to get the latest values
         const selectSql = `
             SELECT 
-                "clientID", "totalBalance" AS balance, "activeInvestment" AS investment, "totalProfit" AS profit, "nextPayout"
+                "clientID", "totalBalance" AS balance, "activeInvestment" AS investment, "totalProfit" AS profit, CAST("nextPayout" AS TEXT) AS "nextPayout"
             FROM clients
             WHERE "clientID" = $1
         `;
@@ -361,7 +359,7 @@ apiRouter.put('/admin/client/:clientID', verifyAdminToken, async (req, res) => {
              console.error(`Client data not found after update for clientID: ${clientID}`);
         }
         
-        // 2b. Broadcast 'activity-update' to refresh the activity table
+        // 2b. Broadcast 'activity-update' to refresh the activity table (if the admin manually adjusted financials)
         broadcastRecentActivity(clientID); 
 
         // 3. Send the API response back to the Admin
@@ -555,7 +553,7 @@ apiRouter.post('/client-login', async (req, res) => {
 });
 
 
-// ⭐ CRITICAL FIX APPLIED HERE (Client Dashboard Data) ⭐
+// Client Dashboard Data Route (CRITICAL FIX APPLIED)
 apiRouter.get('/client/me', verifyClientToken, async (req, res) => {
     const clientID = req.user.id;
 

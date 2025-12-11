@@ -534,39 +534,55 @@ footer a {
 }
 
 /* ------------------------------------------- */
-/* ⭐ MOBILE HISTORY FIX: RESPONSIVENESS (UPDATED) ⭐ */
+/* ⭐ CRITICAL FIX: MOBILE HISTORY TABLE RESPONSIVENESS (OPTION 1: HORIZONTAL SCROLL) ⭐ */
 /* ------------------------------------------- */
+
+/* * This container MUST wrap the entire Recent Activity content (table or list) 
+ * in your dashboard HTML for horizontal scrolling to work.
+ */
+.history-container {
+    width: 100%;
+    overflow-x: auto; /* Enables horizontal scroll when table content overflows */
+    -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
+    padding-bottom: 10px; /* Space for the scroll bar */
+}
+
 @media (max-width: 600px) {
     /* Main Content Padding Fix for very small screens */
     .main-content {
         padding: 20px 15px;
     }
 
-    /* Stack Transaction History Items Vertically */
+    /* Force the transaction item container/table to be wide enough to scroll */
+    .recent-activity {
+        padding: 10px; /* Reduce padding inside the activity box */
+    }
+
+    /* The history table content itself (assuming .transaction-item is inside a flex/grid or is a direct table row) 
+     * We revert the flex stacking and ensure the elements are small enough to utilize the horizontal scroll.
+     * This relies on the table/list container having a minimum width greater than the screen width.
+     */
     .transaction-item {
-        flex-direction: column; /* FIX: Stack vertically on small screens */
-        align-items: flex-start; /* Align all text to the left */
-        padding: 15px 0; /* More padding between stacked items */
+        /* Revert to desktop behavior (flex/inline) to ensure horizontal stacking */
+        min-width: 600px; /* Force items to take up enough space to trigger scroll */
+        flex-direction: row; 
+        align-items: center;
+        padding: 10px 0;
+        font-size: 0.85em; /* Shrink font for compactness */
     }
 
-    /* Force full width for each nested div (Type, Amount, Date, Status) */
     .transaction-item > div {
-        width: 100%; /* FIX: Ensures each data point takes full width */
-        padding: 3px 0;
-        text-align: left !important; /* Force left alignment */
-    }
-
-    /* Enhance readability by adding labels (if using hidden labels in HTML) */
-    .transaction-item .type {
-        font-size: 1.1rem; /* Slightly larger type for emphasis */
-        margin-bottom: 5px;
-    }
-
-    /* Remove the default right alignment from the last item on mobile */
-    .transaction-item > div:last-child {
+        /* On small screens, ensure the columns are explicitly sized within the 600px min-width */
+        flex-basis: 25%; 
+        width: 25%;
+        padding: 0 5px;
         text-align: left !important;
     }
 
+    .transaction-item > div:last-child {
+        text-align: right !important; /* Keep the status aligned right for table look */
+    }
+    
     /* Make the whole sidebar collapse on mobile */
     .dashboard-layout {
         flex-direction: column;
