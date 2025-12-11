@@ -52,13 +52,12 @@ app.use(cors({
 
 
 // --- 3. API Routes (Client and Admin) ---
-// 🚨 CRITICAL FIX: Define and link apiRouter immediately after global middleware 
+// Define and link apiRouter immediately after global middleware 
 const apiRouter = express.Router();
 app.use('/api', apiRouter);
 
 
 // Static file serving
-// This must be placed AFTER the API router link (app.use('/api', apiRouter))
 // Since ROOT_DIR is the parent (repo root), this now correctly serves index.html.
 app.use(express.static(ROOT_DIR)); 
 
@@ -78,7 +77,6 @@ function broadcastOnlineClients() {
  * @param {string} clientID The ID of the client to fetch activity for.
  */
 async function broadcastRecentActivity(clientID) {
-    // NOTE: This SQL appears correctly formatted (no NBSP error was reported here)
     const sql = `
         SELECT 
             type, 
@@ -169,7 +167,7 @@ apiRouter.post('/admin/login', (req, res) => {
     res.status(401).json({ message: 'Invalid Admin credentials' });
 });
 
-// ✅ UPDATED ADMIN ROUTE: Update Transaction Status (The Secure Verification Step)
+// Admin Route: Update Transaction Status
 apiRouter.put('/admin/transaction/:id', verifyAdminToken, async (req, res) => {
     const { id } = req.params;
     const { status, clientID } = req.body; 
@@ -208,7 +206,7 @@ apiRouter.get('/admin/profile', verifyAdminToken, (req, res) => {
     res.json({ id: req.user.id, name: req.user.name, role: req.user.role });
 });
 
-// ✅ UPDATED ADMIN ROUTE: Get All Clients
+// Admin Route: Get All Clients
 apiRouter.get('/admin/clients', verifyAdminToken, async (req, res) => {
     const sql = `
         SELECT 
@@ -229,7 +227,7 @@ apiRouter.get('/admin/clients', verifyAdminToken, async (req, res) => {
     }
 });
 
-// ✅ UPDATED ADMIN ROUTE: Client Update Route (used by Admin to adjust financials)
+// Admin Route: Client Update Route (used by Admin to adjust financials)
 apiRouter.put('/admin/client/:clientID', verifyAdminToken, async (req, res) => {
     const { clientID } = req.params;
     const { balance, investment, profit, nextPayout } = req.body; 
@@ -287,7 +285,7 @@ apiRouter.put('/admin/client/:clientID', verifyAdminToken, async (req, res) => {
 
 // 🌟 CLIENT API ROUTES 🌟
 
-// ⭐ CRITICAL FIX: Add the GET /api/client/activity route
+// Client Route: Get Transaction History
 apiRouter.get('/client/activity', verifyClientToken, async (req, res) => {
     const clientID = req.user.id;
     
@@ -317,7 +315,7 @@ apiRouter.get('/client/activity', verifyClientToken, async (req, res) => {
 });
 
 
-// ✅ UPDATED CLIENT ROUTE: Log Transaction Claim (Deposit, Withdraw, Car, Plan)
+// Client Route: Log Transaction Claim (Deposit, Withdraw, Car, Plan)
 apiRouter.post('/client/transaction', verifyClientToken, async (req, res) => {
     const clientID = req.user.id;
     const { type, amount } = req.body; 
@@ -363,7 +361,7 @@ apiRouter.post('/client/transaction', verifyClientToken, async (req, res) => {
 });
 
 
-// ⭐ FIXED CLIENT ROUTE: Register (More robust ID generation)
+// Client Route: Register (Robust ID generation)
 apiRouter.post('/register', async (req, res) => {
     const { name, email, password } = req.body;
 
@@ -389,7 +387,6 @@ apiRouter.post('/register', async (req, res) => {
         
         const maxIdResult = await db.query(maxIdSql);
         
-        // Start count at 0 if no numeric IDs exist, otherwise use the maximum existing ID.
         let maxIDNumber = 0;
         
         if (maxIdResult.rows.length > 0 && maxIdResult.rows[0].max_id !== null) {
@@ -427,13 +424,12 @@ apiRouter.post('/register', async (req, res) => {
         });
 
     } catch (err) {
-        // Log the full error object for better debugging
         console.error("Database error during registration:", err); 
         return res.status(500).json({ message: 'Database error during registration.' });
     }
 });
 
-// ✅ UPDATED CLIENT ROUTE: Login
+// Client Route: Login
 apiRouter.post('/client-login', async (req, res) => {
     const { email, password } = req.body;
     
@@ -459,23 +455,24 @@ apiRouter.post('/client-login', async (req, res) => {
 });
 
 
-// ✅ CRITICAL FIX APPLIED HERE: Get Client Profile
+// ⭐ CRITICAL FIX APPLIED HERE (Client Dashboard Data) ⭐
 apiRouter.get('/client/me', verifyClientToken, async (req, res) => {
     const clientID = req.user.id;
 
-    // 🚨 FIXED SQL: Indentation re-typed using standard spaces to remove NBSP (' ') characters
+    // This SQL query was manually cleaned to remove the invisible NBSP characters.
+    // NOTE: This query starts the SELECT on the same line to minimize indentation issues.
     const sql = `
-        SELECT 
-            "clientID", 
-            name, 
-            email, 
-            "totalBalance" AS balance, 
-            "totalProfit" AS profit, 
-            "activeInvestment" AS investment, 
-            CAST("nextPayout" AS TEXT) AS "nextPayout" 
-        FROM clients 
-        WHERE "clientID" = $1
-    `;
+SELECT 
+    "clientID", 
+    name, 
+    email, 
+    "totalBalance" AS balance, 
+    "totalProfit" AS profit, 
+    "activeInvestment" AS investment, 
+    CAST("nextPayout" AS TEXT) AS "nextPayout" 
+FROM clients 
+WHERE "clientID" = $1
+`;
     try {
         const result = await db.query(sql, [clientID]);
         const clientData = result.rows[0];
@@ -486,7 +483,7 @@ apiRouter.get('/client/me', verifyClientToken, async (req, res) => {
 
         res.json(clientData);
     } catch (err) {
-        // This is the error handler that was logging the syntax error.
+        // This log message will now show the error details if a different DB issue occurs.
         console.error("Database error fetching client data:", err.message); 
         return res.status(500).json({ message: 'Database error fetching client data.' });
     }
@@ -521,7 +518,6 @@ app.get('/', (req, res) => {
 // Catch-all route for SPA client-side routing (e.g., /dashboard, /login)
 app.use((req, res, next) => {
     // Only process GET requests that don't start with /api 
-    // and that haven't been handled by express.static or the routes above.
     if (req.method === 'GET' && !req.path.startsWith('/api')) {
         
         // Serve index.html for all other client paths (SPA routing)
@@ -535,8 +531,6 @@ app.use((req, res, next) => {
         return res.status(404).send('404 Not Found');
     }
     
-    // If it's a non-GET request or starts with /api, and hasn't been handled, 
-    // it likely means the API route was not found (404), or the method is wrong (405).
     next();
 });
 
