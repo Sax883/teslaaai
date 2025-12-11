@@ -364,6 +364,8 @@ apiRouter.post('/client/transaction', verifyClientToken, async (req, res) => {
 // Client Route: Register (Robust ID generation)
 apiRouter.post('/register', async (req, res) => {
     const { name, email, password } = req.body;
+    // ⭐ NEW: Define the initial bonus amount
+    const INITIAL_BONUS = 200.00; 
 
     if (!name || !email || !password) {
         return res.status(400).json({ message: 'Name, email, and password are required.' });
@@ -399,18 +401,26 @@ apiRouter.post('/register', async (req, res) => {
         
         console.log(`Attempting to register new client with ID: ${newClientID}`);
 
-        // 3. Insert new client (Includes the $200 welcome bonus from database.js default)
-        const insertSql = `
+        // 3. Insert new client (Sets initial balance to $200.00)
+        const insertClientSql = `
             INSERT INTO clients ("clientID", name, email, password, "totalBalance", "totalProfit", "activeInvestment", "nextPayout")
-            VALUES ($1, $2, $3, $4, 200.00, 0.00, 0.00, NULL) 
+            VALUES ($1, $2, $3, $4, $5, 0.00, 0.00, NULL) 
         `;
         
-        const params = [newClientID, name, email, password];
-        await db.query(insertSql, params);
+        const clientParams = [newClientID, name, email, password, INITIAL_BONUS];
+        await db.query(insertClientSql, clientParams);
         
-        console.log(`Successfully registered client ${newClientID}. Generating token...`);
+        // ⭐ NEW: 4. Insert the initial $200 Bonus transaction record
+        const insertBonusSql = `
+            INSERT INTO transactions ("clientID", type, amount, status, timestamp)
+            VALUES ($1, 'Bonus', $2, 'Completed', NOW())
+        `;
+        const bonusParams = [newClientID, INITIAL_BONUS];
+        await db.query(insertBonusSql, bonusParams);
+        
+        console.log(`Successfully registered client ${newClientID} with $${INITIAL_BONUS} bonus transaction logged. Generating token...`);
 
-        // 4. Generate JWT Token
+        // 5. Generate JWT Token
         const token = jwt.sign(
             { id: newClientID, name, role: 'client' },
             SECRET_KEY,

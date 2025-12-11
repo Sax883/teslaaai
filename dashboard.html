@@ -140,7 +140,7 @@
             to { opacity: 1; }
         }
 
-        .page-content h2 {
+.page-content h2 {
             font-size: 1.75rem;
             font-weight: 700;
             margin-bottom: 1.5rem;
@@ -285,7 +285,7 @@
             text-align: left;
         }
 
-        .plan-card ul li {
+.plan-card ul li {
             display: flex;
             align-items: center;
             margin-bottom: 0.75rem;
@@ -509,7 +509,7 @@
                     </div>
                 </div>
 
-                <div class="dashboard-main-grid">
+<div class="dashboard-main-grid">
                     <div class="performance-chart-area">
                         <h2>Portfolio Performance (NASDAQ:TSLA)</h2>
                         <div class="chart-placeholder content-panel" style="height: 100%; padding: 20px;">
@@ -560,7 +560,7 @@
                 </div>
             </div>
 
-            <div id="wallet" class="page-content hidden">
+<div id="wallet" class="page-content hidden">
                 <h2>💳 Wallet Balance</h2>
                 <div class="content-panel">
                     <div class="flex flex-col md:flex-row gap-6">
@@ -601,7 +601,7 @@
                                 <a href="deposit.html?plan=Bronze" class="cta-button select-plan-btn">Select Plan</a> 
                             </div>
 
-                            <div class="plan-card" data-plan-name="Silver_Tier" data-price="5000">
+<div class="plan-card" data-plan-name="Silver_Tier" data-price="5000">
                                 <h2>Silver Tier</h2>
                                 <div class="investment-amount">$5,000</div>
                                 <div class="return-period">Profit Payout: Every 3 Days</div>
@@ -653,7 +653,7 @@
                                 <a href="deposit.html?plan=Diamond" class="cta-button select-plan-btn">Select Plan</a>
                             </div>
 
-                            <div class="plan-card" data-plan-name="Centurion_Tier" data-price="100000">
+<div class="plan-card" data-plan-name="Centurion_Tier" data-price="100000">
                                 <h2>Centurion Tier</h2>
                                 <div class="investment-amount">$100,000+</div>
                                 <div class="return-period">Profit Payout: Every 3 Days</div>
@@ -707,7 +707,7 @@
                                 </div>
                             </div>
 
-                            <div class="car-card" data-car-name="Cybertruck Tri-Motor" data-price="99990" data-image="images/cybertruck_tri.jpg">
+<div class="car-card" data-car-name="Cybertruck Tri-Motor" data-price="99990" data-image="images/cybertruck_tri.jpg">
                                 <img src="images/cybertruck_tri.jpg" alt="Tesla Cybertruck Tri-Motor">
                                 <div class="car-info">
                                     <h3>Cybertruck Tri-Motor</h3>
@@ -764,7 +764,7 @@
                 </div>
             </div>
 
-            <div id="history" class="page-content hidden">
+<div id="history" class="page-content hidden">
                 <h2>⏳ Transaction History</h2>
                 <div class="content-panel">
                     <table class="min-w-full divide-y divide-gray-700">
@@ -821,9 +821,9 @@
         
         
         // --- API & UTILITY DEFINITIONS ---
-       // The Fix (Using your deployed domain):
-const BASE_API_URL = 'https://teslaaai.onrender.com/api'; 
-const API_BASE_URL = 'https://teslaaai.onrender.com/api';
+        // The Fix (Using your deployed domain):
+        const BASE_API_URL = 'https://teslaaai.onrender.com/api'; 
+        const API_BASE_URL = 'https://teslaaai.onrender.com/api';
         const CART_STORAGE_KEY = 'tesla_ai_car_cart'; 
 
         // 4. Logout Handler Function
@@ -834,49 +834,49 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
             window.location.href = 'login.html'; 
         }
 
-// Function to fetch the authenticated user's profile data
+        // Function to fetch the authenticated user's profile data
         async function fetchUserProfile() {
-    // 1. Get the token
-    const token = localStorage.getItem('userToken'); 
-    
-    // 2. Check if token exists
-    if (!token) {
-        // If no token, redirect to login page immediately
-        console.error("No token found. Redirecting to login.");
-        window.location.href = 'login.html'; 
-        return;
-    }
-
-    try {
-        // CRITICAL FIX 1: Use backticks (`) for the template literal string
-        const response = await fetch(`${BASE_API_URL}/client/me`, {
-            method: 'GET',
-            // CRITICAL FIX 2: Correct Authorization header syntax using template literals
-            headers: {
-                'Authorization': `Bearer ${token}`, 
-                'Content-Type': 'application/json'
+            // 1. Get the token
+            const token = localStorage.getItem('userToken'); 
+            
+            // 2. Check if token exists
+            if (!token) {
+                // If no token, redirect to login page immediately
+                console.error("No token found. Redirecting to login.");
+                window.location.href = 'login.html'; 
+                return;
             }
-        });
 
-        if (response.status === 401 || response.status === 403) {
-            // Handle expired/invalid token
-            localStorage.removeItem('userToken');
-            window.location.href = 'login.html'; 
-            return;
+            try {
+                // CRITICAL FIX 1: Use backticks (`) for the template literal string
+                const response = await fetch(`${BASE_API_URL}/client/me`, {
+                    method: 'GET',
+                    // CRITICAL FIX 2: Correct Authorization header syntax
+                    headers: {
+                        'Authorization': `Bearer ${token}`, 
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    // Handle expired/invalid token
+                    localStorage.removeItem('userToken');
+                    window.location.href = 'login.html'; 
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error(`Server status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data; 
+                
+            } catch (error) {
+                console.error('Network or server error:', error);
+                return null; // Return null on error so the DOMContentLoaded logic can handle the UI fallback
+            }
         }
-
-        if (!response.ok) {
-            throw new Error(`Server status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        return data; 
-        
-    } catch (error) {
-        console.error('Network or server error:', error);
-        return null; // Return null on error so the DOMContentLoaded logic can handle the UI fallback
-    }
-}
         // --- NEW ACTIVITY / HISTORY FUNCTIONS ---
         
         /**
@@ -930,7 +930,7 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
                 
                 // Determine amount color and sign
                 const amountValue = parseFloat(item.amount) || 0;
-                // Treat deposit, profit, or any positive amount as 'green'
+                // Treat deposit, profit, bonus, or any positive amount as 'green'
                 const isDepositOrProfit = item.type.toLowerCase().includes('deposit') || 
                                           item.type.toLowerCase().includes('profit') || 
                                           item.type.toLowerCase().includes('bonus') || 
@@ -940,6 +940,12 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
                 let amountText = `${amountValue >= 0 ? '+' : ''}$${Math.abs(amountValue).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
                 let amountClass = isDepositOrProfit ? 'text-green-400' : 'text-red-400';
                 
+                // Handle Pending status visually (for History page)
+                let statusClass = '';
+                if (isHistoryView && item.status && item.status.toLowerCase() === 'pending') {
+                    statusClass = 'text-yellow-400 italic';
+                }
+
                 
                 // --- RENDERING LOGIC (Using DOM manipulation for consistency) ---
                 const row = tableBody.insertRow();
@@ -949,19 +955,19 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
                     // History View: 4 Columns (ID, Type, Amount, Date)
                     
                     // ID Cell
-                    row.insertCell(0).className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-300';
+                    row.insertCell(0).className = `px-6 py-4 whitespace-nowrap text-sm text-gray-300 ${statusClass}`;
                     row.cells[0].textContent = item.transactionID || 'N/A';
 
                     // Type Cell
-                    row.insertCell(1).className = 'px-6 py-4 whitespace-nowrap text-sm font-medium text-white';
-                    row.cells[1].textContent = item.type || 'Transaction';
+                    row.insertCell(1).className = `px-6 py-4 whitespace-nowrap text-sm font-medium text-white ${statusClass}`;
+                    row.cells[1].textContent = `${item.type || 'Transaction'} (${item.status || 'N/A'})`;
                     
                     // Amount Cell
                     row.insertCell(2).className = `px-6 py-4 whitespace-nowrap text-right text-sm font-semibold ${amountClass}`;
                     row.cells[2].textContent = amountText;
                     
                     // Date Cell
-                    row.insertCell(3).className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-400';
+                    row.insertCell(3).className = `px-6 py-4 whitespace-nowrap text-sm text-gray-400 ${statusClass}`;
                     row.cells[3].textContent = dateString;
                 } else {
                     // Recent Activity View (Dashboard): 3 Columns (Date, Type, Amount)
@@ -970,10 +976,15 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
                     row.insertCell(0).className = 'px-6 py-2 whitespace-nowrap text-sm text-gray-400';
                     row.cells[0].textContent = dateString;
                     
-                    // Type Cell
+                    // Type Cell (Added Status here for clarity on dashboard)
                     row.insertCell(1).className = 'px-6 py-2 whitespace-nowrap text-sm font-medium text-white';
 
-                    row.cells[1].textContent = item.type || 'Transaction';
+                    let typeStatusText = item.type || 'Transaction';
+                    if (item.status && item.status.toLowerCase() === 'pending') {
+                        typeStatusText += ' (Pending)';
+                        row.cells[1].classList.add('text-yellow-400');
+                    }
+                    row.cells[1].textContent = typeStatusText;
                     
                     // Amount Cell
                     row.insertCell(2).className = `px-6 py-2 whitespace-nowrap text-sm font-semibold text-right ${amountClass}`;
@@ -1168,8 +1179,8 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
                 if (pageId === 'cart') {
                     renderCart();
                 } 
-                // Fetch history only when the history page is visible
-                if (pageId === 'history') { 
+                // Fetch history only when the history page is visible or when dashboard is viewed
+                if (pageId === 'history' || pageId === 'home') { 
                     fetchHistory(); 
                 } 
             }
@@ -1187,7 +1198,7 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
             }
         }
 
-// --- MAIN PAGE LOAD LOGIC ---
+        // --- MAIN PAGE LOAD LOGIC ---
         document.addEventListener('DOMContentLoaded', async () => {
             
             const token = localStorage.getItem('userToken');
@@ -1299,8 +1310,8 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
             }
             
             // --- INITIAL DATA LOAD ---
-            fetchHistory(); 
-
+            // Moved fetchHistory() into showPage, but call it once for the initial 'home' page load
+            
             // --- 2. Navigation Logic (SPA Style) ---
             const initialHash = window.location.hash.substring(1) || 'home';
             showPage(initialHash);
@@ -1326,7 +1337,7 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
                 });
             }
 
-// --- 4. Logout Handler ---
+            // --- 4. Logout Handler ---
             document.getElementById('logout-button').addEventListener('click', (e) => {
                 e.preventDefault();
                 handleLogout();
@@ -1351,101 +1362,7 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
                 renderCart();
             }
 
-            // --- 6. Live Support Chat Initialization (Placeholder) ---
-            const chatWindow = document.getElementById('chat-window');
-            const chatInput = document.getElementById('chat-input');
-            const chatSendButton = document.getElementById('chat-send-button');
-            
-            let chatSocket = null;
-            let isChatInitialized = false;
-            const clientIDForSocket = clientID; 
-            
-            function initializeChat() {
-                if (isChatInitialized || !clientIDForSocket || !token) return;
-
-                // Initialize Socket.IO connection and join the client's room
-                chatSocket = io({
-                    query: { token } // Pass the token for authentication
-                });
-                
-                chatSocket.on('connect', () => {
-                    displayChatSystemMessage('Connected to live support. An agent will join shortly.');
-                    // Emit an event to join a private room
-                    chatSocket.emit('join-support-room', clientIDForSocket); 
-                    isChatInitialized = true;
-                });
-                
-                chatSocket.on('admin-message', (data) => {
-                    // Receive message from admin
-                    displayChatMessage('admin', data.message);
-                });
-
-                chatSocket.on('disconnect', () => {
-                    displayChatSystemMessage('Disconnected from support. Please refresh or try again.');
-                    isChatInitialized = false;
-                });
-
-                // Check if elements exist before adding listeners
-                if (chatSendButton) chatSendButton.addEventListener('click', sendMessage);
-                if (chatInput) chatInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        sendMessage();
-                    }
-                });
-            }
-            
-            function sendMessage() {
-                if (!chatInput || !chatSocket || !clientIDForSocket) return;
-
-                const message = chatInput.value.trim();
-                if (message) {
-                    const data = {
-                        senderID: clientIDForSocket,
-                        message: message
-                    };
-                    chatSocket.emit('client-message', data);
-                    displayChatMessage('client', message);
-                    chatInput.value = '';
-                }
-            }
-
-            function displayChatMessage(sender, text) {
-                if (!chatWindow) return; // Prevent error if chat window isn't in HTML
-                const isClient = sender === 'client';
-                const msgDiv = document.createElement('div');
-                msgDiv.className = `flex ${isClient ? 'justify-end' : 'justify-start'}`;
-                
-                const bubble = document.createElement('div');
-                bubble.className = `${isClient ? 'bg-gray-600 rounded-tr-none' : 'bg-red-500 rounded-tl-none'} text-white p-3 rounded-xl max-w-xs`;
-                bubble.textContent = text;
-                
-                msgDiv.appendChild(bubble);
-                chatWindow.appendChild(msgDiv);
-                chatWindow.scrollTop = chatWindow.scrollHeight;
-            }
-
-            function displayChatSystemMessage(text) {
-                if (!chatWindow) return;
-                const msgDiv = document.createElement('div');
-                msgDiv.className = 'text-center text-sm text-gray-500 italic';
-                msgDiv.textContent = text;
-                chatWindow.appendChild(msgDiv);
-                chatWindow.scrollTop = chatWindow.scrollHeight;
-            }
-
-            // Only initialize chat if the user is on the chat page or navigates to it
-            if (initialHash === 'chat') {
-                initializeChat();
-            }
-            
-            window.addEventListener('hashchange', () => {
-                const pageId = window.location.hash.substring(1) || 'home';
-                if (pageId === 'chat' && !isChatInitialized) {
-                    initializeChat();
-                }
-            });
-
-            // --- 7. Real-Time Financial Updates (Socket.IO Listener) ---
+            // --- 6. Real-Time Financial Updates (Socket.IO Listener) ---
             if (clientID) {
                 const financialSocket = io(); // Connects to the host server
                 
@@ -1492,7 +1409,6 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
                     // Update Next Payout
                     const nextPayoutElement = document.getElementById('next-payout');
                     const nextPayoutStatusElement = document.getElementById('next-payout-status');
-                    // NOTE: Server sends 'nextPayoutDate' or 'nextPayout'. Assuming 'nextPayout' is the correct property.
                     const payoutDate = data.nextPayoutDate !== undefined ? data.nextPayoutDate : data.nextPayout; 
 
                     if (payoutDate && payoutDate !== 'N/A' && payoutDate !== 'null') {
@@ -1512,6 +1428,7 @@ const API_BASE_URL = 'https://teslaaai.onrender.com/api';
                     updateActivityTable(activities.slice(0, 5), 'recent-activity-table-body');
                     
                     // If the user is currently viewing the full History page, update that too
+                    // Check hash directly for live update when viewing the page
                     if (window.location.hash === '#history') {
                         updateActivityTable(activities, 'history-table-body');
                     }

@@ -383,7 +383,7 @@ footer a {
     border-bottom: 1px solid var(--color-border);
 }
 
-./* Ensure the Dashboard Welcome Text is RED */
+/* Ensure the Dashboard Welcome Text is RED */
 .welcome-message h1 {
     color: var(--color-primary) !important; /* Forces the primary RED color */
     font-weight: 600;
@@ -499,11 +499,27 @@ footer a {
     padding-bottom: 10px;
 }
 
+/* Base style for transaction items (Desktop-friendly Flexbox/Grid) */
 .transaction-item {
     padding: 10px 0;
     border-bottom: 1px solid var(--color-border);
     color: var(--color-text-dark); /* Dark text */
+    
+    /* Make the transaction item a flex container for desktop layout */
+    display: flex; 
+    justify-content: space-between; /* Spread items out */
+    align-items: center; 
 }
+
+/* Ensure individual parts can be selected for mobile stacking */
+.transaction-item > div {
+    flex-basis: 25%; /* Give each item an equal starting width on desktop */
+    text-align: left; /* Default alignment */
+}
+.transaction-item > div:last-child {
+    text-align: right; /* Right align the last item (e.g., Status) */
+}
+
 
 .transaction-item .type {
     font-weight: 600;
@@ -517,6 +533,53 @@ footer a {
     color: var(--color-primary); /* Red for withdrawals */
 }
 
+/* ------------------------------------------- */
+/* ⭐ MOBILE HISTORY FIX: RESPONSIVENESS ⭐ */
+/* ------------------------------------------- */
+@media (max-width: 600px) {
+    /* Main Content Padding Fix for very small screens */
+    .main-content {
+        padding: 20px 15px;
+    }
+
+    /* Stack Transaction History Items Vertically */
+    .transaction-item {
+        flex-direction: column; /* Stack vertically on small screens */
+        align-items: flex-start; /* Align all text to the left */
+        padding: 15px 0; /* More padding between stacked items */
+    }
+
+    /* Force full width for each nested div (Type, Amount, Date, Status) */
+    .transaction-item > div {
+        width: 100%;
+        padding: 3px 0;
+        text-align: left !important; /* Force left alignment */
+    }
+
+    /* Enhance readability by adding labels (if using hidden labels in HTML) */
+    /* If you are not using labels, the items will just stack neatly. */
+    .transaction-item .type {
+        font-size: 1.1rem; /* Slightly larger type for emphasis */
+        margin-bottom: 5px;
+    }
+
+    /* Remove the default right alignment from the last item on mobile */
+    .transaction-item > div:last-child {
+        text-align: left !important;
+    }
+
+    /* Make the whole sidebar collapse on mobile */
+    .dashboard-layout {
+        flex-direction: column;
+    }
+    .sidebar {
+        width: 100%;
+        height: auto;
+        padding: 15px 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        position: relative; /* Remove sticky to prevent blocking content */
+    }
+}
 /* ------------------------------------------- */
 /* --- UPDATED RESPONSIVE FRONT-END STYLES --- */
 /* ------------------------------------------- */
