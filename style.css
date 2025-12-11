@@ -534,68 +534,9 @@ footer a {
 }
 
 /* ------------------------------------------- */
-/* ⭐ CRITICAL FIX: MOBILE HISTORY TABLE RESPONSIVENESS (OPTION 1: HORIZONTAL SCROLL) ⭐ */
+/* --- REMOVED: Ineffective horizontal scroll rules for history-container and transaction-item --- */
 /* ------------------------------------------- */
 
-/* * This container MUST wrap the entire Recent Activity content (table or list) 
- * in your dashboard HTML for horizontal scrolling to work.
- */
-.history-container {
-    width: 100%;
-    overflow-x: auto; /* Enables horizontal scroll when table content overflows */
-    -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
-    padding-bottom: 10px; /* Space for the scroll bar */
-}
-
-@media (max-width: 600px) {
-    /* Main Content Padding Fix for very small screens */
-    .main-content {
-        padding: 20px 15px;
-    }
-
-    /* Force the transaction item container/table to be wide enough to scroll */
-    .recent-activity {
-        padding: 10px; /* Reduce padding inside the activity box */
-    }
-
-    /* The history table content itself (assuming .transaction-item is inside a flex/grid or is a direct table row) 
-     * We revert the flex stacking and ensure the elements are small enough to utilize the horizontal scroll.
-     * This relies on the table/list container having a minimum width greater than the screen width.
-     */
-    .transaction-item {
-        /* Revert to desktop behavior (flex/inline) to ensure horizontal stacking */
-        min-width: 600px; /* Force items to take up enough space to trigger scroll */
-        flex-direction: row; 
-        align-items: center;
-        padding: 10px 0;
-        font-size: 0.85em; /* Shrink font for compactness */
-    }
-
-    .transaction-item > div {
-        /* On small screens, ensure the columns are explicitly sized within the 600px min-width */
-        flex-basis: 25%; 
-        width: 25%;
-        padding: 0 5px;
-        text-align: left !important;
-    }
-
-    .transaction-item > div:last-child {
-        text-align: right !important; /* Keep the status aligned right for table look */
-    }
-    
-    /* Make the whole sidebar collapse on mobile */
-    .dashboard-layout {
-        flex-direction: column;
-    }
-    .sidebar {
-        width: 100%;
-        height: auto;
-        padding: 15px 20px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        position: relative; /* Remove sticky to prevent blocking content */
-    }
-}
-/* ------------------------------------------- */
 /* --- UPDATED RESPONSIVE FRONT-END STYLES --- */
 /* ------------------------------------------- */
 
@@ -852,4 +793,117 @@ footer a {
     .hero-section h1 {
         font-size: 1.8rem;
     }
+    
+    /* Main Content Padding Fix for very small screens */
+    .main-content {
+        padding: 20px 15px;
+    }
+
+    /* Force the transaction item container/table to be wide enough to scroll */
+    .recent-activity {
+        padding: 10px; /* Reduce padding inside the activity box */
+    }
+
+    /* The transaction-item (Recent Activity on Dashboard) stacking */
+    .transaction-item {
+        flex-direction: column; 
+        align-items: flex-start;
+        padding: 15px 0;
+    }
+    .transaction-item > div {
+        width: 100%;
+        flex-basis: auto;
+        padding: 2px 0;
+        text-align: left !important;
+    }
+    
+    /* Make the whole sidebar collapse on mobile */
+    .dashboard-layout {
+        flex-direction: column;
+    }
+    .sidebar {
+        width: 100%;
+        height: auto;
+        padding: 15px 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        position: relative; /* Remove sticky to prevent blocking content */
+    }
+
+    /* ------------------------------------------- */
+    /* ✅ NEW: VERTICAL TRANSACTION HISTORY TABLE STACK FIX */
+    /* ------------------------------------------- */
+    
+    #history .content-panel {
+        /* Ensures the table is not clipped if it can't fully transform */
+        overflow-x: hidden; 
+    }
+    
+    /* Hide the original table headers */
+    #history table thead {
+        display: none;
+    }
+
+    /* Force the table to act like a block element */
+    #history table, 
+    #history tbody, 
+    #history tr {
+        display: block;
+        width: 100%;
+    }
+
+    /* Style the row to look like a card or separated item */
+    #history tr {
+        margin-bottom: 15px;
+        border: 1px solid var(--color-border);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        background-color: var(--color-background-light);
+    }
+    
+    /* Make each cell a block element */
+    #history td {
+        display: block;
+        text-align: right !important; /* Align the value text to the right */
+        padding: 10px 15px;
+        border-bottom: 1px solid var(--color-border);
+        position: relative;
+        padding-left: 50%; /* Make room for the pseudo-label */
+        white-space: normal; /* Allow text to wrap */
+    }
+
+    /* Remove the border from the last cell in the row */
+    #history tr td:last-child {
+        border-bottom: 0;
+    }
+    
+    /* Use CSS ::before to insert the table header/label text */
+    #history td::before {
+        /* Content is provided by the data-label attribute */
+        position: absolute;
+        left: 15px;
+        width: 45%;
+        padding-right: 10px;
+        white-space: nowrap;
+        text-align: left;
+        font-weight: 600;
+        color: var(--color-text-dark);
+        content: attr(data-label); /* Pulls the label text from the HTML attribute */
+    }
+    
+    /* Special styling for the 'loading' row */
+    #history tr:has(td[colspan]) {
+        border: none;
+        box-shadow: none;
+        margin: 0;
+        background: transparent;
+    }
+    #history tr:has(td[colspan]) td {
+         text-align: center !important;
+         padding: 20px 0;
+         border-bottom: 0;
+    }
+
+    /* END OF TRANSACTION HISTORY FIX */
+    /* ------------------------------ */
 }
