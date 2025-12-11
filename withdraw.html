@@ -75,15 +75,18 @@
             padding: 30px;
             border-radius: 12px;
             text-align: center;
-            border: 1px solid var(--color-border);
+            /* Changed border color to reflect Pending/Review state */
+            border: 1px solid var(--color-secondary); 
         }
         .process-status-card i {
             font-size: 3rem;
-            color: var(--color-accent);
+            /* Changed icon color to reflect Pending/Review state */
+            color: var(--color-secondary); 
             margin-bottom: 20px;
         }
         .process-status-card h2 {
-            color: var(--color-primary);
+            /* Changed color to reflect Pending/Review state */
+            color: var(--color-secondary); 
             margin-bottom: 15px;
         }
         .process-status-card p {
@@ -143,7 +146,7 @@
                     <h2>💸 Initiate Withdrawal Request</h2>
                     <div class="investment-status-card" style="border-left: 5px solid var(--color-primary); margin-bottom: 30px;">
                         <p style="color: white; font-weight: 500;">Available for Withdrawal</p>
-                        <h1 style="font-size: 2.5rem; color: var(--color-primary);">$200.00</h1>
+                        <h1 id="available-balance" style="font-size: 2.5rem; color: var(--color-primary);">$200.00</h1> 
                         <p style="margin-top: 10px; font-size: 0.9rem;">(Minimum withdrawal: $100. Processing fee: 3%)</p>
                     </div>
 
@@ -173,10 +176,12 @@
 
                 <div id="withdrawal-confirmation" class="hidden process-status-card">
                     <i class="fas fa-clock"></i>
-                    <h2>Withdrawal In Process</h2>
+                    <h2>Withdrawal Request Submitted - Pending Review</h2> 
                     <p>Your withdrawal request for $<span id="conf-amount"></span> via <span id="conf-network"></span> has been successfully submitted and is under review.</p>
                     
                     <div style="margin-top: 25px; padding: 15px; background-color: var(--color-background-darker); border-radius: 8px;">
+                        <p style="font-weight: 600; color: var(--color-secondary);">Current Status: PENDING</p>
+                        <hr style="border-top: 1px solid var(--color-border); margin: 10px 0;">
                         <p style="font-weight: 600; color: var(--color-primary);">Processing Time:</p>
                         <p style="font-size: 1.1rem; margin-top: 5px;">It typically takes up to 24 hours for the transaction to be fully processed and funds to be sent.</p>
                     </div>
@@ -191,18 +196,54 @@
     </div>
 
     <script>
+        // 🟢 FUNCTION TO SAVE TRANSACTION TO HISTORY (Copied/Adapted from checkout.html)
+        function saveTransactionToHistory(amount, network, address, currentBalance) {
+            const transactions = JSON.parse(localStorage.getItem('transactionHistory')) || [];
+            
+            // Calculate 3% fee
+            const fee = amount * 0.03;
+            const netAmount = amount - fee;
+
+            const newTransaction = {
+                id: Date.now(),
+                date: new Date().toLocaleDateString('en-US'),
+                time: new Date().toLocaleTimeString('en-US'),
+                type: 'Withdrawal',
+                description: 'Withdrawal Request to ' + network,
+                amount: -parseFloat(amount).toFixed(2), // Negative to indicate withdrawal/debit
+                network: network,
+                fee: parseFloat(fee).toFixed(2),
+                netAmount: parseFloat(netAmount).toFixed(2),
+                // CRITICAL CHANGE: Status is set to PENDING
+                status: 'Pending', 
+            };
+
+            // NOTE: Since this is purely frontend, we can't reliably update the balance, 
+            // but in a real app, this is where the balance adjustment would happen.
+            
+            transactions.unshift(newTransaction);
+            localStorage.setItem('transactionHistory', JSON.stringify(transactions));
+            console.log('Withdrawal saved to history:', newTransaction);
+        }
+
         document.getElementById('withdraw-form').addEventListener('submit', function(e) {
             e.preventDefault(); // Stop default form submission
 
             // --- 1. Get form values ---
-            const amount = document.getElementById('w-amount').value;
+            const amount = parseFloat(document.getElementById('w-amount').value);
             const networkSelect = document.getElementById('w-network');
             const network = networkSelect.options[networkSelect.selectedIndex].value;
-            // The address is implicitly collected by the form, but not displayed on the success screen
+            const address = document.getElementById('w-address').value;
+            // NOTE: Hardcoded balance, must be retrieved from server in a real app
+            const availableBalance = parseFloat(document.getElementById('available-balance').innerText.replace('$', '').replace(',', '')); 
 
-            // Basic Validation (Optional, but recommended)
-            if (parseFloat(amount) < 100) {
+            // Basic Validation
+            if (amount < 100) {
                 alert('Withdrawal amount must be at least $100.');
+                return;
+            }
+            if (amount > availableBalance) {
+                 alert('Error: Withdrawal amount exceeds your available balance.');
                 return;
             }
             if (!network) {
@@ -210,15 +251,16 @@
                 return;
             }
 
-            // --- 2. Update confirmation details ---
-            document.getElementById('conf-amount').innerText = parseFloat(amount).toFixed(2);
+            // --- 2. Save Transaction to History (Sets Pending Status) ---
+            saveTransactionToHistory(amount, network, address, availableBalance);
+            
+            // --- 3. Update confirmation details ---
+            document.getElementById('conf-amount').innerText = amount.toFixed(2);
             document.getElementById('conf-network').innerText = network;
             
-            // --- 3. Switch interface (Sequential Flow) ---
+            // --- 4. Switch interface (Sequential Flow) ---
             document.getElementById('withdraw-form-interface').classList.add('hidden');
             document.getElementById('withdrawal-confirmation').classList.remove('hidden');
-            
-            // In a real application, you would make an AJAX/Fetch call here to send the data to the server.
         });
     </script>
 </body>

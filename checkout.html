@@ -169,6 +169,23 @@
             align-items: center;
             justify-content: center;
         }
+        /* Style for the PENDING status box */
+        .pending-status-box {
+            background-color: rgba(252, 211, 77, 0.1); /* Yellow/Gold light background */
+            border-left: 5px solid var(--color-secondary); /* Yellow/Gold border */
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .pending-status-box p {
+            margin: 5px 0;
+        }
+        .pending-status-box .status-text {
+            color: var(--color-secondary);
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
     </style>
 </head>
 <body class="dashboard-body">
@@ -194,7 +211,7 @@
             <div class="step-indicator">
                 <div id="step-1" class="active-step">1. Confirm</div>
                 <div id="step-2">2. Payment</div>
-                <div id="step-3">3. Success</div>
+                <div id="step-3">3. Status</div>
             </div>
 
             <div class="content-panel" style="max-width: 800px; margin: 0 auto;">
@@ -256,15 +273,16 @@
 
 
                 <div id="purchase-success" class="hidden-step checkout-box">
-                    <h2>✅ Payment Confirmation Received!</h2>
-                    <p style="color: var(--color-text-light); margin-bottom: 25px;">Your transaction for <span id="confirmed-item"></span> has been registered and is pending network confirmation.</p>
+                    <h2 style="color: var(--color-secondary);">⏳ Transaction Registered - Pending!</h2>
+                    <p style="color: var(--color-text-light); margin-bottom: 25px;">Your confirmation for <span id="confirmed-item"></span> has been received successfully.</p>
                     
-                    <div style="padding: 20px; background-color: var(--color-background-dark); border-radius: 8px;">
-                        <p style="font-weight: 600; color: var(--color-primary);">Tracking Transaction...</p>
-                        <p id="success-message" style="margin-top: 10px; color: var(--color-text-light); font-size: 0.9rem;">Your transaction is being processed. Once confirmed, your funds will be credited shortly.</p>
-                        <p style="margin-top: 15px; font-size: 0.8rem; color: var(--color-text-light);">You can safely close this page. Check your History for status updates.</p>
+                    <div class="pending-status-box">
+                        <p style="margin-bottom: 10px;"><i class="fas fa-clock"></i> Current Status:</p>
+                        <p class="status-text">PENDING ADMIN CONFIRMATION</p>
+                        <hr style="border-top: 1px solid var(--color-border); margin: 15px 0;">
+                        <p id="success-message" style="margin-top: 10px; color: var(--color-text-light); font-size: 0.9rem;">Your transaction is being processed. Once we verify the payment on the blockchain and you update the total balance on your admin site, the status will change to **Successful** and funds will be credited.</p>
+                        <p style="margin-top: 15px; font-size: 0.8rem; color: var(--color-text-light); font-style: italic;">You can safely close this page. Check your Recent Activity/History for status updates.</p>
                     </div>
-
                     <a href="dashboard.html" class="cta-button" style="width: 100%; margin-top: 30px; background-color: var(--color-primary);">Return to Dashboard</a>
                 </div>
 
@@ -312,6 +330,7 @@
                 description: purchasedItemName || item.replace(/_/g, ' '), // Use the globally stored name
                 amount: parseFloat(price), 
                 network: network,
+                // STATUS IS SET TO PENDING
                 status: 'Pending Confirmation', 
             };
 
@@ -340,7 +359,8 @@
             } else if (activeStep === 3) {
                 step1Indicator.classList.add('active-step');
                 step2Indicator.classList.add('active-step');
-                step3Indicator.classList.add('active-step');
+                // The third step is now 'Status'
+                step3Indicator.classList.add('active-step'); 
                 view3.classList.remove('hidden-step');
             }
         }
@@ -373,21 +393,21 @@
                 purchasedItemName = itemContext; 
                 document.querySelector('.top-bar h1').textContent = 'Deposit Funds Checkout';
                 document.getElementById('summary-text').textContent = 'Please confirm the details of your fund deposit.';
-                successMessage = 'Your deposit is being processed. Once confirmed, your funds will be credited shortly.';
+                successMessage = 'Your deposit confirmation is received and is awaiting administrative approval and fund verification.'; // UPDATED MESSAGE
             } else if (mode === 'plan' && itemName) {
                 transactionTypeDisplay = 'Investment Plan';
                 itemContext = itemName.replace(/_/g, ' ') + ' Plan';
                 purchasedItemName = itemContext; 
                 document.querySelector('.top-bar h1').textContent = 'Investment Plan Checkout';
                 document.getElementById('summary-text').textContent = 'Please confirm the details of your selected investment plan.';
-                successMessage = 'Your investment has been registered and is pending network confirmation. Your plan will activate shortly.';
+                successMessage = 'Your investment has been registered and is pending administrative approval. Your plan will activate once the payment is verified.'; // UPDATED MESSAGE
             } else if (itemName) { // Assumed Car Purchase
                 transactionTypeDisplay = 'Luxury Vehicle';
                 itemContext = itemName.replace(/_/g, ' ');
                 purchasedItemName = itemContext; 
                 document.querySelector('.top-bar h1').textContent = 'Luxury Vehicle Checkout';
                 document.getElementById('summary-text').textContent = 'Please confirm the details of your selected Tesla vehicle purchase.';
-                successMessage = 'Once confirmed, the Tesla sales team will contact you within 48 hours via your registered email to finalize delivery details.';
+                successMessage = 'Your vehicle purchase request is pending. Once verified by our administration, the Tesla sales team will contact you within 48 hours via your registered email to finalize delivery details.'; // UPDATED MESSAGE
             }
 
             // Update success message in step 3
@@ -452,13 +472,13 @@
             // Use the globally stored network variable
             const finalNetwork = preselectedNetwork || 'N/A';
             
-            // 1. Save Transaction History
+            // 1. Save Transaction History (Status: 'Pending Confirmation')
             saveTransactionToHistory(mode, itemName, price, finalNetwork);
 
             // 2. Update Step 3 Display Text
             document.getElementById('confirmed-item').innerText = purchasedItemName;
             
-            // 3. Move to Step 3 (Success)
+            // 3. Move to Step 3 (Success/Status View)
             updateSteps(3);
         }
 

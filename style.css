@@ -534,7 +534,7 @@ footer a {
 }
 
 /* ------------------------------------------- */
-/* ⭐ MOBILE HISTORY FIX: RESPONSIVENESS ⭐ */
+/* ⭐ MOBILE HISTORY FIX: RESPONSIVENESS (UPDATED) ⭐ */
 /* ------------------------------------------- */
 @media (max-width: 600px) {
     /* Main Content Padding Fix for very small screens */
@@ -544,20 +544,19 @@ footer a {
 
     /* Stack Transaction History Items Vertically */
     .transaction-item {
-        flex-direction: column; /* Stack vertically on small screens */
+        flex-direction: column; /* FIX: Stack vertically on small screens */
         align-items: flex-start; /* Align all text to the left */
         padding: 15px 0; /* More padding between stacked items */
     }
 
     /* Force full width for each nested div (Type, Amount, Date, Status) */
     .transaction-item > div {
-        width: 100%;
+        width: 100%; /* FIX: Ensures each data point takes full width */
         padding: 3px 0;
         text-align: left !important; /* Force left alignment */
     }
 
     /* Enhance readability by adding labels (if using hidden labels in HTML) */
-    /* If you are not using labels, the items will just stack neatly. */
     .transaction-item .type {
         font-size: 1.1rem; /* Slightly larger type for emphasis */
         margin-bottom: 5px;
@@ -740,7 +739,8 @@ footer a {
         width: 60%;
         height: 100vh;
         background-color: var(--color-background-light);
-        flex-direction: column;
+        /* Ensure flex-direction is column for stacking (already present, maintained) */
+        flex-direction: column; 
         justify-content: flex-start;
         padding-top: 100px;
         transition: right 0.5s ease;
@@ -749,14 +749,29 @@ footer a {
 
     .nav-links.active {
         right: 0;
+        /* FIX 1: Explicitly set display and alignment for vertical stacking */
+        display: flex; 
+        flex-direction: column;
+        align-items: flex-start; 
     }
 
     .navbar nav a {
-        margin: 20px 0;
-        padding: 10px 30px;
-        width: 100%;
+        /* FIX 2: Remove desktop margin-left and fix vertical margin */
+        margin: 0; 
+        padding: 15px 30px; /* Adjusted padding for better tap target */
+        width: 100%; /* Force full width */
         text-align: left;
         border-bottom: 1px solid var(--color-border);
+    }
+    
+    /* FIX 3: Override the desktop CTA style for mobile alignment */
+    .navbar nav a.cta-button {
+        display: block; 
+        width: calc(100% - 60px); /* Full width minus side padding */
+        margin: 20px 30px; /* Provides separation from other links and centers the block element */
+        text-align: center; 
+        padding: 10px 15px; 
+        border-bottom: none; /* Remove border from the button */
     }
     
     .navbar nav a:last-child {

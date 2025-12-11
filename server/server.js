@@ -14,7 +14,8 @@ const cors = require('cors');
 const ROOT_DIR = path.join(__dirname, '..');
 
 // --- CRITICAL CHANGE: Import the new PostgreSQL-compatible database module ---
-const db = require('./database'); // This now exports { query, pool }
+// This assumes 'database.js' exports { query, pool }
+const db = require('./database'); 
 
 // --- 1. Load Data and Setup ---
 const adminUser = {
@@ -167,37 +168,126 @@ apiRouter.post('/admin/login', (req, res) => {
     res.status(401).json({ message: 'Invalid Admin credentials' });
 });
 
-// Admin Route: Update Transaction Status
+// Admin Route: Update Transaction Status AND Client Balance (CRITICAL UPDATE)
 apiRouter.put('/admin/transaction/:id', verifyAdminToken, async (req, res) => {
     const { id } = req.params;
     const { status, clientID } = req.body; 
     
+    // Ensure the status is valid and clientID is present
     if (!['Completed', 'Declined'].includes(status) || !clientID) {
         return res.status(400).json({ message: 'Invalid status or missing clientID.' });
     }
     
+    // Get a database client for a transaction
+    const client = await db.pool.connect(); 
+    
     try {
-        // 1. Update the transaction status in the DB
-        const updateSql = `
+        await client.query('BEGIN'); // Start database transaction
+
+        // 1. Fetch the existing transaction to get details (Lock row with FOR UPDATE)
+        const fetchSql = `
+            SELECT type, amount, status FROM transactions 
+            WHERE "transactionID" = $1 AND "clientID" = $2 FOR UPDATE;
+        `;
+        const fetchResult = await client.query(fetchSql, [id, clientID]);
+        
+        if (fetchResult.rowCount === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ message: `Transaction ID ${id} not found for client ${clientID}.` });
+        }
+
+        const transaction = fetchResult.rows[0];
+
+        // Check if the transaction is already completed (to prevent double crediting/debiting)
+        if (transaction.status === 'Completed') {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ message: `Transaction ${id} is already Completed.` });
+        }
+
+        let balanceChange = 0;
+        let investmentChange = 0;
+        let finalMessage = `Transaction ${id} marked as ${status}.`;
+
+        // 2. Perform Financial Calculation if status is 'Completed'
+        if (status === 'Completed') {
+            const transactionAmount = parseFloat(transaction.amount);
+
+            if (transaction.type === 'Deposit') {
+                balanceChange = transactionAmount;
+                finalMessage += ` Balance credited $${transactionAmount.toFixed(2)}.`;
+            } else if (transaction.type === 'Withdrawal') {
+                // Assuming a 3% fee on withdrawals
+                const feeRate = 0.03;
+                const netWithdrawalAmount = transactionAmount * (1 + feeRate); // We debit the gross amount including fee
+                
+                // Debit the balance (The client pays the full gross amount)
+                balanceChange = -netWithdrawalAmount; 
+                finalMessage += ` Balance debited $${netWithdrawalAmount.toFixed(2)} (3% fee deducted from withdrawal).`;
+            } else if (transaction.type === 'Investment' || transaction.type === 'Car Plan') {
+                 // Debit the balance and credit active investment
+                 balanceChange = -transactionAmount;
+                 investmentChange = transactionAmount;
+                 finalMessage += ` Balance debited $${transactionAmount.toFixed(2)} and Active Investment credited.`;
+            } else if (transaction.type === 'Profit Payout') {
+                 // Credit the balance
+                 balanceChange = transactionAmount;
+                 finalMessage += ` Balance credited $${transactionAmount.toFixed(2)} as Profit Payout.`;
+            }
+        }
+        
+        // 3. Update Client Financials
+        // Only update if there is a change to prevent unnecessary database writes
+        if (balanceChange !== 0 || investmentChange !== 0) {
+            const updateClientSql = `
+                UPDATE clients
+                SET "totalBalance" = "totalBalance" + $1, "activeInvestment" = "activeInvestment" + $2
+                WHERE "clientID" = $3
+            `;
+            const clientUpdateResult = await client.query(updateClientSql, [balanceChange, investmentChange, clientID]);
+            
+            if (clientUpdateResult.rowCount === 0) {
+                 await client.query('ROLLBACK');
+                 return res.status(500).json({ message: 'Failed to update client financial data. Rollback initiated.' });
+            }
+        }
+        
+        // 4. Update the transaction status in the DB
+        const updateTransSql = `
             UPDATE transactions
             SET status = $1
             WHERE "transactionID" = $2
         `;
-        const result = await db.query(updateSql, [status, id]);
+        await client.query(updateTransSql, [status, id]);
         
-        if (result.rowCount === 0) {
-            return res.status(404).json({ message: `Transaction ID ${id} not found.` });
-        }
+        await client.query('COMMIT'); // Commit the changes
 
-        // 2. Successful update response
-        res.json({ message: `Transaction ${id} marked as ${status}.` });
+        // 5. Successful update response
+        res.json({ message: finalMessage });
 
-        // 3. Notify Client Dashboard of Final Status
+        // 6. Notify Client Dashboard of Final Status and updated financials (Broadcasts)
         broadcastRecentActivity(clientID); 
         
+        // Fetch and broadcast the updated financial metrics (balance, investment)
+        const selectSql = `
+            SELECT 
+                "clientID", "totalBalance" AS balance, "activeInvestment" AS investment, "totalProfit" AS profit, "nextPayout"
+            FROM clients
+            WHERE "clientID" = $1
+        `;
+        // Use db.query (simple read) after the transaction is complete
+        const selectResult = await db.query(selectSql, [clientID]); 
+        const updatedData = selectResult.rows[0];
+
+        if (updatedData) {
+            io.to(clientID).emit('financial-update', updatedData);
+        }
+        
     } catch (err) {
-        console.error("Database error updating transaction status:", err.message);
-        return res.status(500).json({ message: 'Failed to update transaction status.' });
+        await client.query('ROLLBACK'); // Rollback on any error
+        console.error("Database error updating transaction status and client balance:", err.message);
+        return res.status(500).json({ message: 'Failed to update transaction status and client balance.' });
+    } finally {
+        client.release(); // Release the client back to the pool
     }
 });
 
@@ -469,8 +559,6 @@ apiRouter.post('/client-login', async (req, res) => {
 apiRouter.get('/client/me', verifyClientToken, async (req, res) => {
     const clientID = req.user.id;
 
-    // This SQL query was manually cleaned to remove the invisible NBSP characters.
-    // NOTE: This query starts the SELECT on the same line to minimize indentation issues.
     const sql = `
 SELECT 
     "clientID", 
