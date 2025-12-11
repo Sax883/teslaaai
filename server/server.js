@@ -37,7 +37,9 @@ const ADMIN_ROOM = 'admin-room'; // Room for Admin notifications
 
 const app = express();
 const server = http.createServer(app);
-const io = new new Server(server, {
+
+// FIX APPLIED HERE: Removed the duplicate 'new' keyword.
+const io = new Server(server, { 
     cors: {
         origin: "*", // Allow all origins for simplicity in testing
         methods: ["GET", "POST", "PUT"]
