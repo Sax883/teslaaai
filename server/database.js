@@ -77,9 +77,10 @@ async function initializeDatabase() {
         `);
         console.log('PostgreSQL tables initialized successfully.');
 
-        // 3. Admin User Check 
-            const adminEmail = 'support@telsaai.co';
-        const adminCheck = await query('SELECT "clientID" FROM clients WHERE email = $1', [adminEmail]);
+        // 3. Admin User Check
+        const adminClientID = 'ADMIN000';
+        const adminEmail = 'support@telsaai.co';
+        const adminCheck = await query('SELECT "clientID" FROM clients WHERE "clientID" = $1', [adminClientID]);
         
         if (adminCheck.rows.length === 0) {
             const bcrypt = require('bcrypt');
@@ -88,8 +89,10 @@ async function initializeDatabase() {
             await query(`
                 INSERT INTO clients ("clientID", name, email, password, "totalBalance", "activeInvestment", "totalProfit", "nextPayout")
                 VALUES ($1, $2, $3, $4, 0.00, 0.00, 0.00, NULL)
-            `, ['ADMIN000', 'Main Admin', adminEmail, adminHashedPassword]);
+            `, [adminClientID, 'Main Admin', adminEmail, adminHashedPassword]);
             console.log('Default Admin user created with ID ADMIN000.');
+        } else {
+            console.log('Admin user with ID ADMIN000 already exists. Skipping seed insert.');
         }
 
     } catch (err) {
