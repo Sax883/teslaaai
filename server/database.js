@@ -78,7 +78,7 @@ async function initializeDatabase() {
         console.log('PostgreSQL tables initialized successfully.');
 
         // 3. Admin User Check 
-        const adminEmail = 'admin@teslaai.com';
+            const adminEmail = 'support@telsaai.co';
         const adminCheck = await query('SELECT "clientID" FROM clients WHERE email = $1', [adminEmail]);
         
         if (adminCheck.rows.length === 0) {
