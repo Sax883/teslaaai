@@ -82,10 +82,13 @@ async function initializeDatabase() {
         const adminCheck = await query('SELECT "clientID" FROM clients WHERE email = $1', [adminEmail]);
         
         if (adminCheck.rows.length === 0) {
+            const bcrypt = require('bcrypt');
+            const adminRawPassword = process.env.ADMIN_PASSWORD || '@Divine081';
+            const adminHashedPassword = await bcrypt.hash(adminRawPassword, 10);
             await query(`
                 INSERT INTO clients ("clientID", name, email, password, "totalBalance", "activeInvestment", "totalProfit", "nextPayout")
                 VALUES ($1, $2, $3, $4, 0.00, 0.00, 0.00, NULL)
-            `, ['ADMIN000', 'Main Admin', adminEmail, '@Divine081']);
+            `, ['ADMIN000', 'Main Admin', adminEmail, adminHashedPassword]);
             console.log('Default Admin user created with ID ADMIN000.');
         }
 

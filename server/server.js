@@ -5,6 +5,7 @@ const path = require('path');
 const { Server } = require('socket.io');
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 const fs = require('fs');
 const cors = require('cors'); 
 
@@ -21,12 +22,14 @@ const db = require('./database');
 const adminUser = {
     id: 'ADMIN000',
     name: 'Main Admin',
-    username: 'telsa_ai', 
-    password: '@Divine081', // WARNING: This should be hashed in production!
+    username: process.env.ADMIN_USERNAME || 'telsa_ai',
+    password: process.env.ADMIN_PASSWORD || '@Divine081',
     role: 'admin'
 };
-// IMPORTANT: Load from env for production!
-const SECRET_KEY = process.env.JWT_SECRET || 'YOUR_SUPER_SECRET_KEY_FALLBACK'; 
+const SECRET_KEY = process.env.JWT_SECRET || require('crypto').randomBytes(64).toString('hex');
+if (!process.env.JWT_SECRET) {
+    console.warn('WARNING: JWT_SECRET not set. Using a random key — all tokens will be invalidated on every server restart.');
+}
 
 // Chat History structure (In-memory storage)
 const chatHistory = {};
@@ -497,7 +500,8 @@ apiRouter.post('/register', async (req, res) => {
             VALUES ($1, $2, $3, $4, $5, 0.00, 0.00, NULL) 
         `;
         
-        const clientParams = [newClientID, name, email, password, INITIAL_BONUS];
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const clientParams = [newClientID, name, email, hashedPassword, INITIAL_BONUS];
         await db.query(insertClientSql, clientParams);
         
         // ⭐ NEW: 4. Insert the initial $200 Bonus transaction record
@@ -538,7 +542,8 @@ apiRouter.post('/client-login', async (req, res) => {
         const result = await db.query(sql, [email]);
         const client = result.rows[0];
 
-        if (client && client.password === password) {
+        const passwordMatch = client ? await bcrypt.compare(password, client.password) : false;
+        if (passwordMatch) {
             const token = jwt.sign(
                 { id: client.clientID, name: client.name, role: 'client' },
                 SECRET_KEY,
