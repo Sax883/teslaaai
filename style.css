@@ -20,6 +20,15 @@
     --border-radius: 8px;
 }
 
+/* Index-only dark theme override */
+.index-page {
+    --color-background-dark: #0f172a;
+    --color-background-light: #111827;
+    --color-text-dark: #f3f4f6;
+    --color-text-light: #cbd5e1;
+    --color-border: #334155;
+}
+
 body {
     font-family: var(--font-family);
     background-color: var(--color-background-dark); /* Main light background */
