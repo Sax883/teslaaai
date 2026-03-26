@@ -33,7 +33,7 @@
     <section class="hero-section">
         <div class="hero-video-wrap" aria-hidden="true">
             <video class="hero-video" autoplay muted loop playsinline>
-                <source src="tesla%20car%20video.mp4" type="video/mp4">
+                <source src="telsa%20car%20video%20flash.mp4" type="video/mp4">
             </video>
         </div>
         <h1>Intelligent Investment, Exponential Growth.</h1>
@@ -264,6 +264,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             const hamburger = document.getElementById('hamburger');
             const navLinks = document.getElementById('navLinks');
+            const heroVideo = document.querySelector('.hero-video');
 
             // Toggle the 'active' class on the hamburger and nav links when clicked
             hamburger.addEventListener('click', () => {
@@ -280,6 +281,10 @@
                     navLinks.classList.remove('active');
                 });
             });
+
+            if (heroVideo) {
+                heroVideo.playbackRate = 0.75;
+            }
         });
     </script>
 
