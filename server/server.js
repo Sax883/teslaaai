@@ -1,4 +1,5 @@
 // server.js - Final Update for PostgreSQL (using async/await with db.query)
+require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const path = require('path');
@@ -19,17 +20,22 @@ const ROOT_DIR = path.join(__dirname, '..');
 const db = require('./database'); 
 
 // --- 1. Load Data and Setup ---
+if (!process.env.ADMIN_USERNAME || !process.env.ADMIN_PASSWORD) {
+    console.error('FATAL: ADMIN_USERNAME and ADMIN_PASSWORD environment variables must be set.');
+    process.exit(1);
+}
 const adminUser = {
     id: 'ADMIN000',
     name: 'Main Admin',
-    username: process.env.ADMIN_USERNAME || 'telsa_ai',
-    password: process.env.ADMIN_PASSWORD || '@Divine081',
+    username: process.env.ADMIN_USERNAME,
+    password: process.env.ADMIN_PASSWORD,
     role: 'admin'
 };
-const SECRET_KEY = process.env.JWT_SECRET || require('crypto').randomBytes(64).toString('hex');
 if (!process.env.JWT_SECRET) {
-    console.warn('WARNING: JWT_SECRET not set. Using a random key — all tokens will be invalidated on every server restart.');
+    console.error('FATAL: JWT_SECRET environment variable must be set.');
+    process.exit(1);
 }
+const SECRET_KEY = process.env.JWT_SECRET;
 
 // Chat History structure (In-memory storage)
 const chatHistory = {};
