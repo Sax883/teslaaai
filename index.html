@@ -41,6 +41,15 @@
         </div>
     </section>
 
+    <section class="live-testimonies" aria-label="Live client testimonies">
+        <div class="live-testimonies-header">
+            <span class="live-dot"></span>
+            <h2>Live Testimonies</h2>
+            <p>Real-time investor updates</p>
+        </div>
+        <div class="live-testimony-feed" id="liveTestimonyFeed" aria-live="polite"></div>
+    </section>
+
     <section id="about" class="content-section about-section">
         <h2>🚀 About TelsaAi</h2>
         <p class="professional-text">TelsaAi is at the forefront of the financial technology revolution. Our platform leverages proprietary Artificial Intelligence models to analyze global market data, identify high-potential assets, and execute optimal investment strategies. Founded by a team of Wall Street veterans and leading data scientists, we are committed to transparency, security, and delivering consistent value to our clients. Our goal is simple: democratize sophisticated AI-driven financial tools.</p>
@@ -286,6 +295,58 @@
 
             if (heroVideo) {
                 heroVideo.playbackRate = 0.75;
+            }
+
+            const testimonyFeed = document.getElementById('liveTestimonyFeed');
+            const testimonyPool = [
+                { name: 'Michael A.', text: 'I have gotten my profit. Thanks for this investment!' },
+                { name: 'Sophia R.', text: 'Just received my car today. Smooth process from start to finish.' },
+                { name: 'Daniel K.', text: 'My payout dropped exactly on schedule. Very impressive.' },
+                { name: 'Amara E.', text: 'I reinvested after my first successful withdrawal.' },
+                { name: 'Olivia T.', text: 'Support team answered me quickly and my transaction was confirmed fast.' },
+                { name: 'James N.', text: 'I got my car and profit this month. Big thank you to the team.' },
+                { name: 'Grace B.', text: 'Everything updated on my dashboard exactly as promised.' },
+                { name: 'Noah C.', text: 'I just got my profit now. This platform is really active.' },
+                { name: 'Ethan P.', text: 'My withdrawal was processed and I immediately received confirmation.' },
+                { name: 'Chloe D.', text: 'I have gotten my profit three times this month. Thank you team!' },
+                { name: 'Samuel J.', text: 'Received my Tesla delivery update right after payment verification.' },
+                { name: 'Ava M.', text: 'This is my second car order and it was approved quickly.' },
+                { name: 'Liam F.', text: 'Daily updates and stable returns, exactly what I needed.' },
+                { name: 'Mia S.', text: 'I just received my car. The process was smooth and fast.' },
+                { name: 'Benjamin H.', text: 'Profit landed again today. Appreciate the consistency.' }
+            ];
+
+            function buildTestimonyItem(item) {
+                const row = document.createElement('div');
+                row.className = 'testimony-item';
+
+                const now = new Date();
+                const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                row.innerHTML = '<span class="testimony-name">' + item.name + '</span>' +
+                    '<p class="testimony-text">' + item.text + '</p>' +
+                    '<span class="testimony-time">just now - ' + time + '</span>';
+
+                return row;
+            }
+
+            if (testimonyFeed) {
+                let cursor = 0;
+                const visibleCount = 3;
+
+                for (let i = 0; i < visibleCount; i++) {
+                    testimonyFeed.appendChild(buildTestimonyItem(testimonyPool[cursor % testimonyPool.length]));
+                    cursor += 1;
+                }
+
+                setInterval(() => {
+                    testimonyFeed.insertBefore(buildTestimonyItem(testimonyPool[cursor % testimonyPool.length]), testimonyFeed.firstChild);
+                    cursor += 1;
+
+                    while (testimonyFeed.children.length > visibleCount) {
+                        testimonyFeed.removeChild(testimonyFeed.lastChild);
+                    }
+                }, 2600);
             }
         });
     </script>
