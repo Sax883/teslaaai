@@ -10,14 +10,13 @@ const bcrypt = require('bcrypt');
 const fs = require('fs');
 const cors = require('cors'); 
 
-// --- CRITICAL PATH ADJUSTMENT ---
-// FIX: The server.js is in /server, but index.html is in the root. 
-// We must point to the parent directory (..).
-const ROOT_DIR = path.join(__dirname, '..');
+// --- PATH SETUP ---
+// This server runs from the repo root, so the static HTML files live here too.
+const ROOT_DIR = __dirname;
 
-// --- CRITICAL CHANGE: Import the new PostgreSQL-compatible database module ---
-// This assumes 'database.js' exports { query, pool }
-const db = require('./database'); 
+// --- DATABASE MODULE ---
+// Load the shared database helper from the /server folder.
+const db = require('./server/database'); 
 
 // --- 1. Load Data and Setup ---
 if (!process.env.ADMIN_USERNAME || !process.env.ADMIN_PASSWORD) {
