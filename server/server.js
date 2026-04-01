@@ -1,8 +1,8 @@
 // server.js - Final Update for PostgreSQL (using async/await with db.query)
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const express = require('express');
 const http = require('http');
-const path = require('path');
 const { Server } = require('socket.io');
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');

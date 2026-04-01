@@ -230,8 +230,10 @@
     </div>
     <script>
         // --- CONFIGURATION ---
-        // This MUST match your server host and port
-        const API_BASE_URL = 'https://teslaaai.onrender.com/api'; // CRITICAL FIX 1: Corrected API URL to match Render
+        // Always target the current deployed domain so Hostinger or any other host works without code changes.
+        const API_BASE_URL = window.location.origin.startsWith('http')
+            ? `${window.location.origin}/api`
+            : '/api';
 
         const clientTableBody = document.getElementById('clients-table-body');
         const updateArea = document.getElementById('client-update-area');

@@ -821,9 +821,10 @@
         
         
         // --- API & UTILITY DEFINITIONS ---
-        // The Fix (Using your deployed domain):
-        const BASE_API_URL = 'https://teslaaai.onrender.com/api'; 
-        const API_BASE_URL = 'https://teslaaai.onrender.com/api';
+        const BASE_API_URL = window.location.origin.startsWith('http')
+            ? `${window.location.origin}/api`
+            : '/api';
+        const API_BASE_URL = BASE_API_URL;
         const CART_STORAGE_KEY = 'tesla_ai_car_cart'; 
 
         // 4. Logout Handler Function
