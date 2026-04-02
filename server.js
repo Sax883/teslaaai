@@ -1,6 +1,10 @@
 // server.js - Final Update for PostgreSQL (using async/await with db.query)
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '.env') });
+const dotenv = require('dotenv');
+
+// Support both deployment styles: root/.env and server/.env
+dotenv.config({ path: path.join(__dirname, '.env') });
+dotenv.config({ path: path.join(__dirname, 'server', '.env') });
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -26,7 +30,7 @@ if (!process.env.ADMIN_USERNAME || !process.env.ADMIN_PASSWORD) {
 const adminUser = {
     id: 'ADMIN000',
     name: 'Main Admin',
-    username: process.env.ADMIN_USERNAME,
+    username: process.env.ADMIN_USERNAME.trim().toLowerCase(),
     password: process.env.ADMIN_PASSWORD,
     role: 'admin'
 };
@@ -165,8 +169,9 @@ function verifyClientToken(req, res, next) {
 
 apiRouter.post('/admin/login', (req, res) => {
     const { username, password } = req.body;
+    const normalizedUsername = String(username || '').trim().toLowerCase();
 
-    if (username === adminUser.username && password === adminUser.password) {
+    if (normalizedUsername === adminUser.username && password === adminUser.password) {
         const token = jwt.sign(
             { id: adminUser.id, name: adminUser.name, role: 'admin' },
             SECRET_KEY,
@@ -378,6 +383,45 @@ apiRouter.put('/admin/client/:clientID', verifyAdminToken, async (req, res) => {
     } catch (err) {
         console.error("Database error updating client:", err.message);
         return res.status(500).json({ message: 'Database error updating client.' });
+    }
+});
+
+// Admin Route: Delete a client and related transactions
+apiRouter.delete('/admin/client/:clientID', verifyAdminToken, async (req, res) => {
+    const { clientID } = req.params;
+    const client = await db.pool.connect();
+
+    try {
+        await client.query('BEGIN');
+
+        const deleteTransactionsSql = 'DELETE FROM transactions WHERE "clientID" = $1';
+        await client.query(deleteTransactionsSql, [clientID]);
+
+        const deleteClientSql = 'DELETE FROM clients WHERE "clientID" = $1';
+        const deleteResult = await client.query(deleteClientSql, [clientID]);
+
+        if (deleteResult.rowCount === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ message: `Client ID ${clientID} not found.` });
+        }
+
+        await client.query('COMMIT');
+
+        // Notify connected dashboards that this client no longer exists.
+        io.to(clientID).emit('client-deleted', { clientID });
+        io.to(ADMIN_ROOM).emit('client-deleted', { clientID });
+
+        return res.json({ message: `Client ID ${clientID} deleted successfully.` });
+    } catch (err) {
+        try {
+            await client.query('ROLLBACK');
+        } catch (rollbackError) {
+            console.error('Rollback failed during client deletion:', rollbackError.message);
+        }
+        console.error('Database error deleting client:', err.message);
+        return res.status(500).json({ message: 'Database error deleting client.' });
+    } finally {
+        client.release();
     }
 });
 
